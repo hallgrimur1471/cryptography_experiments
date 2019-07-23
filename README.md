@@ -1,5 +1,7 @@
 # Cryptography experiments
 
+Library developed while attempting the [cryptopals crypto challenges](http://cryptopals.com)
+
 ## Prerequisites
 
 * Python3.7

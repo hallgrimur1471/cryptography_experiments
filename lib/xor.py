@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-XOR cryptography
+XOR repeating-key encryption/decryption
 """
 
 from math import floor
@@ -9,6 +9,7 @@ from statistics import mean
 
 from cryptography_experiments import utils as ut
 from cryptography_experiments.utils import DecryptionResult
+
 
 def encrypt(data, key):
     """
@@ -25,8 +26,9 @@ def encrypt(data, key):
     cipher = bytearray(data)
     keysize = len(key)
     for i, byte in enumerate(cipher):
-        cipher[i] = byte ^ key[i%keysize]
+        cipher[i] = byte ^ key[i % keysize]
     return cipher
+
 
 def decrypt(cipher):
     """
@@ -40,18 +42,18 @@ def decrypt(cipher):
     """
     print("determining key ...")
     # determine probable keysizes
-    keysize_candidates = range(2, min(40, floor(len(cipher)/2)))
-    probable_keysizes = [] # [(keysize, hamming_distance), ...]
+    keysize_candidates = range(2, min(40, floor(len(cipher) / 2)))
+    probable_keysizes = []  # [(keysize, hamming_distance), ...]
     for keysize in keysize_candidates:
         hamming_distances = []
         i = 0
-        while (i+keysize)+keysize <= len(cipher):
-            first = cipher[i:i+keysize]
-            second = cipher[(i+keysize):(i+keysize)+keysize]
+        while (i + keysize) + keysize <= len(cipher):
+            first = cipher[i : i + keysize]
+            second = cipher[(i + keysize) : (i + keysize) + keysize]
             hamming_distances.append(ut.hamming_distance(first, second))
-            i += 2*keysize
+            i += 2 * keysize
         hamming_distance = mean(hamming_distances)
-        normalized_hamming_distance = mean(hamming_distances)/keysize
+        normalized_hamming_distance = mean(hamming_distances) / keysize
         probable_keysizes.append((keysize, normalized_hamming_distance))
     probable_keysizes.sort(key=lambda x: x[1])
     print("keysize {} most probable".format(probable_keysizes[0][0]))
@@ -70,6 +72,7 @@ def decrypt(cipher):
     key = bytes(key)
     data = encrypt(cipher, key)
     return DecryptionResult(data, key)
+
 
 def single_byte_decryption(cipher, num_results=1):
     """
@@ -91,5 +94,5 @@ def single_byte_decryption(cipher, num_results=1):
         result = DecryptionResult(data, key)
         results.append(result)
     results.sort(key=lambda m: m.frequency_distance)
-    results_to_return = results[:min(num_results, len(results))]
+    results_to_return = results[: min(num_results, len(results))]
     return results_to_return
