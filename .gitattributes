@@ -1,0 +1,8 @@
+# Input data
+**/*.in binary
+
+lib/data/**/* binary
+
+experiments/s1_basics/codecs.txt binary
+experiments/s1_basics/codecs_list.txt binary
+
