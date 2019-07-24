@@ -6,7 +6,7 @@ Fixed XOR test
 
 import binascii
 
-from cryptography_experiments import utils
+from cryptolib import utils
 
 ## matsano crypto modules
 #matsano_crypto_challenges = abspath("../")

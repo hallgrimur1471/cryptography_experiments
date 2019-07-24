@@ -6,7 +6,7 @@ Finds line in file that has been encrypted using single-character XOR
 
 from os.path import join, dirname, realpath
 
-from cryptography_experiments import xor
+from cryptolib import xor
 
 def main():
     root_folder = dirname(realpath(__file__))

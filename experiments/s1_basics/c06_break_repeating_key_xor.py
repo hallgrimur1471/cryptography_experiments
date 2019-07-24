@@ -8,7 +8,7 @@ import base64
 from functools import reduce
 from os.path import dirname, join, realpath
 
-from cryptography_experiments import xor
+from cryptolib import xor
 
 def main():
     root_folder = dirname(realpath(__file__))

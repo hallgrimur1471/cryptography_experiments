@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from cryptography_experiments.utils import hamming_distance
+from cryptolib.utils import hamming_distance
 
 assert hamming_distance(b'\x01', b'\x01') == 0
 assert hamming_distance(b'\x00', b'\x01') == 1

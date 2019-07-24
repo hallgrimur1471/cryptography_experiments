@@ -7,8 +7,8 @@ XOR repeating-key encryption/decryption
 from math import floor
 from statistics import mean
 
-from cryptography_experiments import utils as ut
-from cryptography_experiments.utils import DecryptionResult
+from cryptolib import utils as ut
+from cryptolib.utils import DecryptionResult
 
 
 def encrypt(data, key):

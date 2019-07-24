@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from cryptography_experiments import xor
-from cryptography_experiments.utils import DecryptionResult
+from cryptolib import xor
+from cryptolib.utils import DecryptionResult
 
 plaintext = ("I'm still a student.."
              "I have a lot of things to do."

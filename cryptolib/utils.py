@@ -8,9 +8,12 @@ import sys
 import os
 import os.path
 from os.path import dirname
-#from statistics import mean
+
+# from statistics import mean
 import base64
-#import inspect
+
+# import inspect
+
 
 class DecryptionResult(object):
     """
@@ -25,8 +28,8 @@ class DecryptionResult(object):
         """
         self._data = data
         self._key = key
-        self._freq_dist = None # frequency distance
-        self._english_char_freq = None # english character frequencies
+        self._freq_dist = None  # frequency distance
+        self._english_char_freq = None  # english character frequencies
 
     @property
     def data(self):
@@ -53,17 +56,17 @@ class DecryptionResult(object):
             self._english_char_freq = self._calculate_english_char_freq()
         # the lower the frequency_distance, the better
         char_scores = []
-        data = self._data # copy() not requred since bytes in not mute-able
+        data = self._data  # copy() not requred since bytes in not mute-able
         for char, engish_freq in self._english_char_freq.items():
             # todo: move normalize_caps to a place where it can be modified
             normalize_caps = False
             if normalize_caps:
-                data = bytearray(data) # slow!
+                data = bytearray(data)  # slow!
                 for i, byte in enumerate(data):
                     if chr(byte).isalpha():
                         data[i] = ord(chr(byte).lower())
             occurs_num = len([byte for byte in data if byte == ord(char)])
-            frequency = float(occurs_num)/len(data)
+            frequency = float(occurs_num) / len(data)
             char_score = abs(frequency - engish_freq)
             char_scores.append(char_score)
         freq_dist = sum(char_scores)
@@ -79,9 +82,12 @@ class DecryptionResult(object):
         """
         # make a lookup table with info about english character frequency
         char_freq = dict()
-        matasano_directory = dirname(sys.path[0])
-        with open(os.path.join(matasano_directory,
-                               "character_frequency_in_english.txt")) as f:
+        cryptolib_directory = dirname(os.path.abspath(__file__))
+        with open(
+            os.path.join(
+                cryptolib_directory, "data/character_frequency_in_english.txt"
+            )
+        ) as f:
             for line in f:
                 line = line.split()
                 char = line[0]
@@ -89,8 +95,9 @@ class DecryptionResult(object):
                 char_freq[char] = int(freq)
         total_chars = sum(char_freq.values())
         for k, v in char_freq.items():
-            char_freq[k] = float(v)/total_chars
+            char_freq[k] = float(v) / total_chars
         return char_freq
+
 
 def hamming_distance(a, b):
     """
@@ -102,7 +109,8 @@ def hamming_distance(a, b):
     Returns:
         hamming distance (int) between a and b
     """
-    return sum([1 for bit in bytes_to_bin(fixed_xor(a, b)) if bit=='1'])
+    return sum([1 for bit in bytes_to_bin(fixed_xor(a, b)) if bit == "1"])
+
 
 def fixed_xor(a, b):
     """
@@ -114,7 +122,8 @@ def fixed_xor(a, b):
     Returns:
         a XOR b (bytes[array])
     """
-    return bytes([i^j for i, j in zip(a, b)])
+    return bytes([i ^ j for i, j in zip(a, b)])
+
 
 def hex_to_base64(hex_):
     """
@@ -125,6 +134,7 @@ def hex_to_base64(hex_):
     """
     base64_ = base64.b64encode(hex_)
     return base64_
+
 
 def hex_string_to_int(hex_string):
     """
@@ -138,6 +148,7 @@ def hex_string_to_int(hex_string):
     """
     return int(hex_string, 16)
 
+
 def bytes_to_bin(b):
     """
     Converts bytes to binary string
@@ -150,8 +161,9 @@ def bytes_to_bin(b):
         b'\x05' -> '101'
         b'\xff\x00' -> '1111111100000000'
     """
-    num = int.from_bytes(b, byteorder='big')
+    num = int.from_bytes(b, byteorder="big")
     return bin(num)[2:]
+
 
 # hex string to bytes:
 #   bytes.fromhex('deadbeef')

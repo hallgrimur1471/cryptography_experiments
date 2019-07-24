@@ -4,7 +4,7 @@
 Single-byte XOR decryption test
 """
 
-from cryptography_experiments import xor
+from cryptolib import xor
 
 def main():
     cipher = bytes.fromhex("1b37373331363f78151b7f2b783431333d78397828372d363c7"

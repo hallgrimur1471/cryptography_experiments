@@ -6,7 +6,7 @@ Implementation test of repeating key XOR
 
 import binascii
 
-from cryptography_experiments import xor
+from cryptolib import xor
 
 def main():
     data = b"Burning 'em, if you ain't quick and nimble\n" \
