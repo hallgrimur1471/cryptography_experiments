@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
+import os
 import base64
 from functools import reduce
 from os.path import dirname, join, realpath
 
-# TODO: replace with "crytography" package on PyPi
-from Crypto.Cipher import AES
-from Crypto import Random
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 key = b"YELLOW SUBMARINE"
-iv = Random.new().read(AES.block_size)
-aes = AES.new(key, AES.MODE_ECB, iv)
+iv = os.urandom(16)
+cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+decryptor = cipher.decryptor()
 
 # read cipher from file
 with open(join(dirname(realpath(__file__)), "c07_aes_in_ecb_mode.in")) as f:
@@ -21,5 +22,5 @@ with open(join(dirname(realpath(__file__)), "c07_aes_in_ecb_mode.in")) as f:
 print(cipher)
 print("************")
 
-data = aes.decrypt(cipher)
+data = decryptor.update(cipher) + decryptor.finalize()
 print(data)
