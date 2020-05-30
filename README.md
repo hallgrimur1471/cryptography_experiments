@@ -1,5 +1,7 @@
 # Cryptography
 
+Library developed while attempting the [cryptopals crypto challenges](http://cryptopals.com)
+
 ## Usage
 
 ```
