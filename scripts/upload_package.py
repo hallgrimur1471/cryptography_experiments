@@ -7,13 +7,13 @@ import sys
 import logging
 from pathlib import Path
 
-import svarmi.cryptography._utils as utils
-import svarmi.cryptography._logging as svarmi_logger
+import drvn.cryptography._utils as utils
+import drvn.cryptography._logging as drvn_logger
 
 
 def main():
     args = parse_arguments()
-    svarmi_logger.configure(logging.DEBUG)
+    drvn_logger.configure(logging.DEBUG)
 
     package_directory = get_package_directory()
     package_version = get_package_version()
@@ -28,8 +28,7 @@ def main():
 
     if is_pre_release_version(package_version):
         print(
-            "\nUnable to upload because current version is a pre-release version, "
-            + "which are forbidden on SPyPi.\n"
+            "\nUnable to upload because current version is a pre-release version.\n"
         )
         print(f"Current version is:\n'{package_version}'\n")
 
@@ -73,7 +72,7 @@ def main():
 
     pd = get_package_directory()
 
-    logging.info("Pushing changes to GitLab, also pushing tags ...")
+    logging.info("Pushing changes to GitHub, also pushing tags ...")
     utils.try_cmd("git push --follow-tags", cwd=pd)
 
     logging.info("Building package ...")
@@ -90,7 +89,7 @@ def main():
     utils.try_cmd("tox -e integration", cwd=pd)
 
     logging.info("Uploading package!")
-    utils.try_cmd("python3.8 -m twine upload -r spypi dist/*", cwd=pd)
+    utils.try_cmd("python3.8 -m twine upload -r pypi dist/*", cwd=pd)
 
     logging.info("Upload successful")
 
@@ -98,11 +97,11 @@ def main():
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.description = (
-        "This scripts uploads this package to SPyPi (spypi.svarmi.is). "
+        "This scripts uploads this package to PyPi. "
         "Before uploading it guides you through any necessary steps you need to do "
         + "to to update the version of the package. The scripts also makes sure unit-"
         + "and integration tests pass before uploding and it also pushes changes "
-        + "to GitLab so you don't forget to 'git push --follow-tags'"
+        + "to GitHub so you don't forget to 'git push --follow-tags'"
     )
     arguments = parser.parse_args()
     return arguments

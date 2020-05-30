@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import svarmi.cryptography._utils as utils
+import drvn.cryptography._utils as utils
 
 
 @pytest.fixture(scope="class")
@@ -16,10 +16,10 @@ def workspace():
 
 class TestScript:
     def test_help_exits_with_returncode_zero(self):
-        utils.try_cmd("svarmi_cryptography --help")
+        utils.try_cmd("drvn_cryptography --help")
 
     def test_normal_run_exits_with_returncode_zero(self, workspace):
-        utils.try_cmd("svarmi_cryptography", cwd=workspace)
+        utils.try_cmd("drvn_cryptography", cwd=workspace)
 
 def _set_up_workspace():
     workspace_path = _get_workspace_path()

@@ -3,14 +3,10 @@
 ## Usage
 
 ```
-svarmi_cryptography --help
+drvn_cryptography --help
 ```
 
 ## Installing
-
-### Installing prerequsites
-
-Run [this](https://gitlab.com/svarmi/scripts/-/blob/master/configure_authentication_to_spypi.py) script to configure authentication to SPyPi.
 
 ### Installing in editable-mode
 
@@ -20,7 +16,7 @@ sudo -H python3.8 -m pip install --editable .
 
 ### Installing in the usual, non-editable mode
 ```
-python3.8 -m pip install --user --index-url https://${SPYPI_USERNAME}:${SPYPI_PASSWORD}@spypi.svarmi.is svarmi.cryptography
+python3.8 -m pip install --user drvn.cryptography
 ```
 
 ## Testing
@@ -56,19 +52,12 @@ tox -e integration
 
 ### Uploading prerequsites
 
-Run [this](https://gitlab.com/svarmi/scripts/-/blob/master/configure_authentication_to_spypi.py) script to configure authentication to SPyPi.
-
 ```
 python3.8 -m pip install --user -r requirements.txt
 ```
 
-### Uploading to SPyPi
-
-After editing package version in setup.py adhering to [semantic versioning](https://semver.org/), run the following to upload your package to SPyPi:
+### Uploading to PyPi
 
 ```
-tox -e upload
+./scripts/upload_package.py
 ```
-
-Copyright (C) 2020, Svarmi
-All rights reserved.

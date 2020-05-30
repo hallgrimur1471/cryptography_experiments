@@ -1,7 +1,7 @@
 # pylint: disable=no-self-use, protected-access
 import pytest
 
-import svarmi.cryptography.example_module as example_module
+import drvn.cryptography.example_module as example_module
 
 
 class TestExampleFunction:
