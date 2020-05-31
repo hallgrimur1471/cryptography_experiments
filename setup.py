@@ -22,10 +22,10 @@ setuptools.setup(
     package_data={"": ["*", ".*"]},
     entry_points={
         "console_scripts": [
-            "drvn_cryptography = "
+            "drvn_cryptography_run_cryptopals_challenge = "
             + "drvn."
-            + "cryptography."
-            + "_script:"
+            + "cryptography_challenges."
+            + "_entry_point_script:"
             + "main"
         ]
     },

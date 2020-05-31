@@ -19,7 +19,10 @@ class TestScript:
         utils.try_cmd("drvn_cryptography --help")
 
     def test_normal_run_exits_with_returncode_zero(self, workspace):
-        utils.try_cmd("drvn_cryptography", cwd=workspace)
+        utils.try_cmd(
+            "drvn_cryptography_run_cryptopals_challenge 1 1", cwd=workspace
+        )
+
 
 def _set_up_workspace():
     workspace_path = _get_workspace_path()
@@ -37,4 +40,3 @@ def _tear_down_workspace():
 def _get_workspace_path():
     workspace_path = Path("/tmp/drvn_cryptography/integration_workspace")
     return workspace_path
-

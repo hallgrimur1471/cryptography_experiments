@@ -8,3 +8,6 @@
 # Cache
 **/__pycache__
 .mypy_cache
+
+# Tox
+.tox
