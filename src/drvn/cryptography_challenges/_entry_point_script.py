@@ -8,10 +8,6 @@ from pathlib import Path
 
 import drvn.cryptography._logging as drvn_logger
 
-CHALLENGE_MAP = [
-    ["s01_c01_convert_hex_to_base64",],
-]
-
 
 def main():
     args = _parse_arguments()
@@ -22,13 +18,12 @@ def main():
         log_level = logging.INFO
     drvn_logger.configure(log_level)
 
-    _run_challenge(args.SET, args.CHALLENGE)
+    _run_challenge(args.CHALLENGE)
 
 
 def _parse_arguments():
     parser = argparse.ArgumentParser()
     parser.description = "Runs a cryptopals.com challenge."
-    parser.add_argument("SET", type=int, help="Set number")
     parser.add_argument("CHALLENGE", type=int, help="Challenge number")
     parser.add_argument(
         "-v",
@@ -40,36 +35,22 @@ def _parse_arguments():
     return arguments
 
 
-def _run_challenge(set_num, challenge_num):
-    challenge_module_name = _get_challenge_module_name(set_num, challenge_num)
+def _run_challenge(challenge_num):
+    challenge_module_name = _get_challenge_module_name(challenge_num)
     import_path = f"drvn.cryptography_challenges.{challenge_module_name}"
 
     challenge_module = importlib.import_module(import_path)
     challenge_module.run_challenge()
 
 
-def _get_challenge_module_name(set_num, challenge_num):
-    set_modules = _get_set_modules(set_num)
-    set_modules.sort()
-
-    if challenge_num < 1 or challenge_num > len(set_modules):
-        raise ValueError(
-            f"Challenge {challenge_num} in set {set_num} does not exist."
-        )
-    challenge_module = set_modules[challenge_num - 1]
-    return challenge_module
-
-
-def _get_set_modules(set_num):
+def _get_challenge_module_name(challenge_num):
     challenge_modules = _get_challenge_modules()
+    challenge_modules.sort()
 
-    set_modules = []
-    for module in challenge_modules:
-        match = re.match("s([0-9]+)_*", module)
-        if match and int(match.group(1)) == set_num:
-            set_modules.append(module)
-
-    return set_modules
+    if challenge_num < 1 or challenge_num > len(challenge_modules):
+        raise ValueError(f"Challenge {challenge_num} does not exist.")
+    challenge_module = challenge_modules[challenge_num - 1]
+    return challenge_module
 
 
 def _get_challenge_modules():

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import drvn.cryptography._utils as utils
+import drvn.cryptography.utils as utils
 
 
 @pytest.fixture(scope="class")
@@ -16,12 +16,17 @@ def workspace():
 
 class TestScript:
     def test_help_exits_with_returncode_zero(self):
-        utils.try_cmd("drvn_cryptography --help")
+        utils.try_cmd("drvn_cryptography_run_cryptopals_challenge --help")
 
-    def test_normal_run_exits_with_returncode_zero(self, workspace):
-        utils.try_cmd(
-            "drvn_cryptography_run_cryptopals_challenge 1 1", cwd=workspace
-        )
+    def test_all_challenges_exit_with_returncode_zero(self, workspace):
+        num_challenges = 9
+
+        for challenge_num in range(1, num_challenges + 1):
+            # assert returncode zero
+            utils.try_cmd(
+                f"drvn_cryptography_run_cryptopals_challenge {challenge_num}",
+                cwd=workspace,
+            )
 
 
 def _set_up_workspace():
