@@ -3,18 +3,15 @@ Various utility functions
 """
 
 import subprocess
-import sys
 import os
 import os.path
 from os.path import dirname
-
-# from statistics import mean
 import base64
 
-# import inspect
+import drvn.cryptography._resources as resources
 
 
-class DecryptionResult(object):
+class DecryptionResult:
     """
     Stores results of a decryption, calculates it's likeness to english.
     """
@@ -71,6 +68,7 @@ class DecryptionResult(object):
         freq_dist = sum(char_scores)
         return freq_dist
 
+    # pylint: disable=no-self-use
     def _calculate_english_char_freq(self):
         """
         Returns:
@@ -81,17 +79,12 @@ class DecryptionResult(object):
         """
         # make a lookup table with info about english character frequency
         char_freq = dict()
-        cryptolib_directory = dirname(os.path.abspath(__file__))
-        with open(
-            os.path.join(
-                cryptolib_directory, "data/character_frequency_in_english.txt"
-            )
-        ) as f:
-            for line in f:
-                line = line.split()
-                char = line[0]
-                freq = line[1]
-                char_freq[char] = int(freq)
+        f = resources.get_contents("character_frequency_in_english.txt")
+        for line in filter(None, f.split("\n")):
+            line = line.split()
+            char = line[0]
+            freq = line[1]
+            char_freq[char] = int(freq)
         total_chars = sum(char_freq.values())
         for k, v in char_freq.items():
             char_freq[k] = float(v) / total_chars
