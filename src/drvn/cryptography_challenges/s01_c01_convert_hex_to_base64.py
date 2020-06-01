@@ -1,9 +1,8 @@
 """
-Convert hex to base64 test
+Convert hex_string to base64_string
 """
 
 import logging
-import base64
 
 import drvn.cryptography.utils as utils
 
