@@ -1,2 +1,6 @@
+import logging
+
+
 def run_challenge():
-    print("Running challenge 2.1")
+    logging.info("Running challenge 9 ...")
+    # https://tools.ietf.org/html/rfc2315#section-10.3
