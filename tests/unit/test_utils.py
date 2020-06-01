@@ -28,3 +28,20 @@ class TestFixedXor:
         data_xor = utils.fixed_xor(data1, data2)
 
         assert data_xor == bytes.fromhex("746865206b696420646f6e277420706c6179")
+
+
+class TestHammingDistance:
+    def test_normal(self):
+        assert utils.hamming_distance(b"\x00", b"\x01") == 1
+        assert utils.hamming_distance(b"\x0f", b"\x05") == 2
+
+    def test_zero(self):
+        assert utils.hamming_distance(b"\x00", b"\x00") == 0
+
+    def test_cryptopals_example(self):
+        a = bytes("this is a test", "utf-8")
+        b = bytes("wokka wokka!!!", "utf-8")
+
+        distance = utils.hamming_distance(a, b)
+
+        assert distance == 37
