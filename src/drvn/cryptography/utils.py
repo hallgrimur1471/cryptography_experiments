@@ -90,6 +90,9 @@ class DecryptionResult:
             char_freq[k] = float(v) / total_chars
         return char_freq
 
+    def __repr__(self):
+        return f"DecryptionResult(data={self.data}, key={self.key})"
+
 
 def hamming_distance(a, b):
     """
