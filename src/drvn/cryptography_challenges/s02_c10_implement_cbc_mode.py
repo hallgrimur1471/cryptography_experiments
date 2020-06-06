@@ -4,7 +4,7 @@ Implement CBC mode
 import logging
 import base64
 
-import drvn.cryptography.utils as utils
+import drvn.cryptography.aes as aes
 import drvn.cryptography_challenges._resources as resources
 
 
@@ -18,9 +18,7 @@ def run_challenge():
     block_size = 16
     iv = bytes([0] * block_size)
 
-    plaintext = utils.decrypt_aes_cbc(
-        ciphertext, key, iv, block_size=block_size
-    )
+    plaintext = aes.decrypt_cbc(ciphertext, key, iv, block_size=block_size)
 
     logging.info(f"\n**** Ciphertext ****\n{ciphertext[0:100]}...")
     logging.info(f"\n**** Initialization vector ****\n{iv}")

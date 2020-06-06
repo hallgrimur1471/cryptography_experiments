@@ -4,6 +4,7 @@ Various utility functions
 
 import subprocess
 import base64
+import random
 
 import drvn.cryptography._resources as resources
 
@@ -167,6 +168,15 @@ def add_pkcs7_padding(bytes_, block_size=8):
     padding = bytes([num_missing] * num_missing)
     bytes_padded = bytes_ + padding
     return bytes_padded
+
+
+def generate_random_bytes(n):
+    byte_list = []
+    for _ in range(0, n):
+        random_byte = random.randint(0, 255)
+        byte_list.append(random_byte)
+    bytes_ = bytes(byte_list)
+    return bytes_
 
 
 def try_cmd(*args, **kwargs):

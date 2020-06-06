@@ -14,12 +14,11 @@ def run_challenge():
     plaintext = base64.b64decode(
         resources.get_contents("c11_ecb_cbc_detection_oracle.in")
     )
-    logging.info(f"Plaintext: {plaintext[0:20]}...")
+    logging.info(f"Plaintext: {plaintext[0:40]}...")
 
     for i in range(0, 10):
         logging.info(f"Iteration {i+1} ...")
         ciphertext = aes.encryption_oracle(plaintext)
-        logging.info(f"Cipher: {ciphertext[0:20]}...")
         mode = aes.detect_mode(ciphertext)
         if mode == "ecb":
             logging.info("Plaintext was encrypted in ECB mode")

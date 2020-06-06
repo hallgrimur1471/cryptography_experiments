@@ -78,6 +78,10 @@ def detect_mode(ciphertext) -> str:
     while j <= len(ciphertext):
         block = ciphertext[i:j]
 
+        # Converting from bytearray to bytes because
+        # bytearray is not hashable
+        block = bytes(block)
+
         if block in blocks:
             return "ecb"
 
@@ -89,9 +93,27 @@ def detect_mode(ciphertext) -> str:
 
 
 def generate_random_aes_key():
-    byte_list = []
-    for _ in range(0, 16):
-        random_byte = random.randint(0, 255)
-        byte_list.append(random_byte)
-    key = bytes(byte_list)
-    return key
+    return utils.generate_random_bytes(16)
+
+
+def encryption_oracle(plaintext):
+    prefix_size = random.randint(5, 10)
+    prefix = utils.generate_random_bytes(prefix_size)
+
+    suffix_size = random.randint(5, 10)
+    suffix = utils.generate_random_bytes(suffix_size)
+
+    plaintext_modified = prefix + plaintext + suffix
+    plaintext_modified_and_padded = utils.add_pkcs7_padding(
+        plaintext_modified, block_size=16
+    )
+
+    key = generate_random_aes_key()
+
+    if random.randint(0, 1) == 1:
+        ciphertext = encrypt_ebc(plaintext_modified_and_padded, key)
+    else:
+        iv = utils.generate_random_bytes(16)
+        ciphertext = encrypt_cbc(plaintext_modified_and_padded, key, iv)
+
+    return ciphertext

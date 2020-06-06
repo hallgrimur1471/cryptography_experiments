@@ -1,5 +1,7 @@
 # pylint: disable=no-self-use, unused-argument, redefined-outer-name
+import re
 import logging
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -19,14 +21,20 @@ class TestScript:
         utils.try_cmd("drvn_cryptography_run_cryptopals_challenge --help")
 
     def test_all_challenges_exit_with_returncode_zero(self, workspace):
-        num_challenges = 9
+        current_challenge = 1
+        while True:
+            try:
+                output = utils.try_cmd(
+                    f"drvn_cryptography_run_cryptopals_challenge {current_challenge}",
+                    stderr=subprocess.PIPE,
+                    cwd=workspace,
+                )
+            except RuntimeError as e:
+                if re.search("Challenge [0-9]+ does not exist", str(e)):
+                    break
+                raise
 
-        for challenge_num in range(1, num_challenges + 1):
-            # assert returncode zero
-            utils.try_cmd(
-                f"drvn_cryptography_run_cryptopals_challenge {challenge_num}",
-                cwd=workspace,
-            )
+            current_challenge += 1
 
 
 def _set_up_workspace():

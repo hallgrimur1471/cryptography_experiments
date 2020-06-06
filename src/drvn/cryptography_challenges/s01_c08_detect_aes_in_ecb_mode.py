@@ -24,4 +24,5 @@ def get_ciphertexts():
     ciphertexts = resources.get_contents("c08_detect_aes_in_ecb_mode.in")
     ciphertexts = ciphertexts.split("\n")
     ciphertexts = [line.rstrip() for line in ciphertexts]
+    ciphertexts = [bytes.fromhex(line) for line in ciphertexts]
     return ciphertexts
