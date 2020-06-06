@@ -123,16 +123,13 @@ def encryption_oracle(plaintext):
     suffix = utils.generate_random_bytes(suffix_size)
 
     plaintext_modified = prefix + plaintext + suffix
-    plaintext_modified_and_padded = utils.add_pkcs7_padding(
-        plaintext_modified, block_size=16
-    )
 
     key = generate_random_aes_key()
 
     if random.randint(0, 1) == 1:
-        ciphertext = encrypt_ebc(plaintext_modified_and_padded, key)
+        ciphertext = encrypt_ebc(plaintext_modified, key)
     else:
         iv = utils.generate_random_bytes(16)
-        ciphertext = encrypt_cbc(plaintext_modified_and_padded, key, iv)
+        ciphertext = encrypt_cbc(plaintext_modified, key, iv)
 
     return ciphertext
