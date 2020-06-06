@@ -1,11 +1,24 @@
-# Cryptography
+# Breaking Cryptography
 
-Library developed while attempting the [cryptopals crypto challenges](http://cryptopals.com)
+This repository currently is being developed while I work on the [cryptopals crypto challenges](http://cryptopals.com) which are about breaking cryptographic systems.
+
+While solving the challenges I'm developing the python package 'drvn.cryptography' which contains cryptography utility functions and methods to exploit cryptographic systems.
+
+Excerpt from the cryptopals challenges:
+
+```
+There are tens, probably hundreds, of obscure little things you can do to take a cryptosystem that should be secure even against an adversary with more CPU cores than there are atoms in the solar system, and make it solveable with a Perl script and 15 seconds. Don't take our word for it: do the challenges and you'll see.
+```
+
+Here is a quick summary of what kind of exploits I have worked on in the challenges:
+
+1. A method to decrypt any english text that has been encrypted using repeating-key XOR using an unknown key.
+2. Detect if ciphertext is AES EBC encrypted.
 
 ## Usage
 
 ```
-drvn_cryptography --help
+drvn_cryptography_run_cryptopals_challenge --help
 ```
 
 ## Installing
