@@ -1,3 +1,5 @@
+import random
+
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -60,3 +62,36 @@ def decrypt_cbc(ciphertext, key, iv, block_size=16):
         j += block_size
 
     return bytes(plaintext)
+
+
+def detect_mode(ciphertext) -> str:
+    """
+    Looks for recurring 16 bytes in the ciphertext.
+    If recurring 16 bytes are found the cihpertext is likely
+    to have been encrypted in ecb mode.
+    """
+    blocks = set()
+    block_size = 16
+    i = 0
+    j = block_size
+
+    while j <= len(ciphertext):
+        block = ciphertext[i:j]
+
+        if block in blocks:
+            return "ecb"
+
+        blocks.add(block)
+        i += block_size
+        j += block_size
+
+    return "unknown"
+
+
+def generate_random_aes_key():
+    byte_list = []
+    for _ in range(0, 16):
+        random_byte = random.randint(0, 255)
+        byte_list.append(random_byte)
+    key = bytes(byte_list)
+    return key

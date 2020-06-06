@@ -2,47 +2,26 @@
 Detect AES in ECB mode
 """
 import logging
-import os.path
-import statistics
-import collections
 
+import drvn.cryptography.aes as aes
 import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
     logging.info("Running challenge 8 ...")
 
-    ciphers = resources.get_contents("c08_detect_aes_in_ecb_mode.in")
-    ciphers = ciphers.split("\n")
-    ciphers = [line.rstrip() for line in ciphers]
-    ciphers = list(filter(None, ciphers))
-    for i, cipher in enumerate(ciphers):
-        block_frequencies_tuples = calculate_block_frequencies(cipher)
-        avg_freq = statistics.mean(
-            [freq for block, freq in block_frequencies_tuples]
-        )
-        if avg_freq > 1:
+    ciphertexts = get_ciphertexts()
+    for i, ciphertext in enumerate(ciphertexts):
+        mode = aes.detect_mode(ciphertext)
+        if mode == "ecb":
             logging.info(
-                "line {} might be encrypted with AES in ECB ".format(i + 1)
-                + "because it contains reccurring 16 byte blocks "
-                + "in the cipher."
+                f"line {i+1} was likely encrypted in ECB mode "
+                + "since the ciphertext contains reccurring 16 byte blocks "
             )
 
 
-def get_script_directory():
-    return os.path.dirname(os.path.abspath(__file__))
-
-
-def calculate_block_frequencies(cipher):
-    frequency_map = collections.defaultdict(int)
-    block_size = 16
-    i = 0
-
-    while i + block_size <= len(cipher):
-        block = cipher[i : i + block_size]
-        frequency_map[block] += 1
-
-        i += block_size
-
-    block_frequencies_tuples = list(frequency_map.items())
-    return block_frequencies_tuples
+def get_ciphertexts():
+    ciphertexts = resources.get_contents("c08_detect_aes_in_ecb_mode.in")
+    ciphertexts = ciphertexts.split("\n")
+    ciphertexts = [line.rstrip() for line in ciphertexts]
+    return ciphertexts

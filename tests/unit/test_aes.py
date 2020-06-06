@@ -89,3 +89,50 @@ def test_encrypt_and_decrypt_cbc_returns_original_bytes():
     resulting_plaintext = aes.decrypt_cbc(ciphertext, key, iv)
 
     assert plaintext == resulting_plaintext
+
+
+class TestDetectMode:
+    def test_detects_ecb(self):
+        ciphertext = bytes.fromhex(
+            "d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd"
+            + "283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f"
+            + "4fd5d2d69c744cd2839475c9dfdbc1d46597949d9c7e82bf5a08649af7"
+            + "0dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af7"
+            + "0dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b"
+            + "29933f2c123c58386b06fba186a"
+        )
+
+        mode = aes.detect_mode(ciphertext)
+
+        assert mode == "ecb"
+
+    def test_detects_nothing(self):
+        ciphertext = bytes.fromhex(
+            "b563aac8275730bd4cf89ab32bb4b152be8fae16afab58ab3ea0e825c8ce28"
+            + "ddbe26c8cafef763f1d9c3f30d60335cd0b765b98a11d5cfbe7a2d75e8f8a5e851"
+            + "ee6a17de174d8bea5c1e089beffc99709d6dcc03e578220eccdfa99d3fa0a3d2f6736de"
+            + "041cd783ad7f866df5dcd2a752cfbfc380cf84da5c5dd3fc486cf1adc14d29d9"
+            + "e91737514e8c67d5c5aece4a19216e2b069f53b8ab4acaef17f815004"
+        )
+
+        mode = aes.detect_mode(ciphertext)
+
+        assert mode != "ecb"
+
+
+class TestGenerateRandomAesKey:
+    def test_returns_bytes(self):
+        key = aes.generate_random_aes_key()
+
+        assert isinstance(key, bytes)
+
+    def test_is_16_bytes(self):
+        key = aes.generate_random_aes_key()
+
+        assert len(key) == 16
+
+    def test_generates_different_keys(self):
+        key_1 = aes.generate_random_aes_key()
+        key_2 = aes.generate_random_aes_key()
+
+        assert key_1 != key_2
