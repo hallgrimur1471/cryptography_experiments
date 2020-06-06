@@ -154,7 +154,7 @@ def bytes_to_bin(b):
     return bin(num)[2:]
 
 
-def add_pkcs7_padding(bytes_, block_size=8):
+def add_pkcs7_padding(bytes_, block_size=16):
     """
     Add padding to bytes_
 
@@ -168,6 +168,11 @@ def add_pkcs7_padding(bytes_, block_size=8):
     padding = bytes([num_missing] * num_missing)
     bytes_padded = bytes_ + padding
     return bytes_padded
+
+
+def remove_pkcs7_padding(bytes_):
+    num_pads = bytes_[-1]
+    return bytes_[0 : len(bytes_) - num_pads]
 
 
 def generate_random_bytes(n):

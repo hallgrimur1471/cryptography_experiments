@@ -83,3 +83,12 @@ class TestAddPkcs7Padding:
 
         with pytest.raises(ValueError):
             utils.add_pkcs7_padding(plaintext, block_size=256)
+
+
+class TestRemovePkcs7Padding:
+    def test_normal(self):
+        plaintext_padded = b"YELLOW SUBMARINE\x04\x04\x04\x04"
+
+        plaintext = utils.remove_pkcs7_padding(plaintext_padded)
+
+        assert plaintext == b"YELLOW SUBMARINE"

@@ -1,14 +1,15 @@
 # pylint: disable=no-self-use, protected-access
+import base64
 
 import drvn.cryptography.aes as aes
 
 
 class TestEncryptEbc:
-    def test_normal(self):
+    def test_no_padding(self):
         plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
         key = "YELLOW_SUBMARINE".encode()
 
-        cipher = aes.encrypt_ebc(plaintext, key)
+        cipher = aes.encrypt_ebc(plaintext, key, add_padding=False)
 
         assert (
             cipher
@@ -16,32 +17,57 @@ class TestEncryptEbc:
             + b"\x0c\x16\xf5>GE\x87<\xee\xf4\xedTd\xad\x00\xe9Q\xe8:"
         )
 
+    def test_with_padding(self):
+        plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
+        key = "YELLOW_SUBMARINE".encode()
+
+        cipher = aes.encrypt_ebc(plaintext, key, add_padding=True)
+
+        assert (
+            cipher
+            == b"\xd1\x0c\x84=\xa3<\xb7\x1e\xe3\xa1\x91UN"
+            + b"\x0c\x16\xf5>GE\x87<\xee\xf4\xedTd\xad\x00\xe9Q\xe8:"
+            + b"\xad\xfd0\x11h\xb2&\xe2V\x14\xa1\x0f\x0bA\x0co"
+        )
+
 
 class TestDecryptEbc:
-    def test_normal(self):
+    def test_do_not_remove_padding(self):
         cipher = (
             b"\xd1\x0c\x84=\xa3<\xb7\x1e\xe3\xa1\x91UN"
             + b"\x0c\x16\xf5>GE\x87<\xee\xf4\xedTd\xad\x00\xe9Q\xe8:"
         )
         key = "YELLOW_SUBMARINE".encode()
 
-        plaintext = aes.decrypt_ebc(cipher, key)
+        plaintext = aes.decrypt_ebc(cipher, key, remove_padding=False)
 
         assert plaintext == "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
+
+    def test_remove_padding(self):
+        cipher = (
+            b"\xd1\x0c\x84=\xa3<\xb7\x1e\xe3\xa1\x91UN"
+            + b"\x0c\x16\xf5>GE\x87<\xee\xf4\xedTd\xad\x00\xe9Q\xe8:"
+            + b"\xad\xfd0\x11h\xb2&\xe2V\x14\xa1\x0f\x0bA\x0co"
+        )
+        key = "YELLOW_SUBMARINE".encode()
+
+        plaintext = aes.decrypt_ebc(cipher, key, remove_padding=True)
+
+        assert plaintext == b"STRAWBERRIES AND CHAMPAGNE :) :)"
 
 
 def test_encrypt_and_decrypt_ebc_returns_original_bytes():
     plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
     key = "YELLOW_SUBMARINE".encode()
 
-    cipher = aes.encrypt_ebc(plaintext, key)
-    resulting_plaintext = aes.decrypt_ebc(cipher, key)
+    cipher = aes.encrypt_ebc(plaintext, key, add_padding=False)
+    resulting_plaintext = aes.decrypt_ebc(cipher, key, remove_padding=False)
 
     assert plaintext == resulting_plaintext
 
 
 class TestEncryptCbc:
-    def test_normal(self):
+    def test_add_padding(self):
         plaintext = (
             b"I'm back and I'm ringin' the bell \nA rockin' on "
             + b"the mike while the fly girls yel"
@@ -49,29 +75,70 @@ class TestEncryptCbc:
         key = b"YELLOW SUBMARINE"
         iv = bytes([0] * 16)
 
-        ciphertext = aes.encrypt_cbc(plaintext, key, iv, block_size=16)
+        ciphertext = aes.encrypt_cbc(
+            plaintext, key, iv, block_size=16, add_padding=True
+        )
 
-        assert ciphertext == (
-            b"\t\x120\xaa\xde>\xb30\xdb\xaaCX\xf8"
-            + b"\x8d*l\xd5\xcf\x83U\xcbh#9z\xd49\x06\xdfCDU\x7f\xc4\x83v\x93"
-            + b"\xc1\xa8\xee;@\xac\xb22?\xad9oN\xf5\x0c\xbf\x02\xf8S\xd8Hs"
-            + b"\x97>C\x0c0S\xc0*o\x8d\xb2\xed'\x08\x13\x10V\xdff\x96["
+        assert (
+            base64.b64encode(ciphertext)
+            == b"CRIwqt4+szDbqkNY+I0qbNXPg1XLaCM5etQ5Bt9DRF"
+            + b"V/xIN2k8Go7jtArLIyP605b071DL8C+FPYSHOXPkMMMFP"
+            + b"AKm+Nsu0nCBMQVt9mlltpwwry7hZr+sKfPn3Uzzs0"
+        )
+
+    def test_do_not_add_padding(self):
+        plaintext = (
+            b"I'm back and I'm ringin' the bell \nA rockin' on "
+            + b"the mike while the fly girls yel"
+        )
+        key = b"YELLOW SUBMARINE"
+        iv = bytes([0] * 16)
+
+        ciphertext = aes.encrypt_cbc(
+            plaintext, key, iv, block_size=16, add_padding=False
+        )
+
+        assert (
+            base64.b64encode(ciphertext)
+            == b"CRIwqt4+szDbqkNY+I0qbNXPg1XLaCM5etQ5Bt9DR"
+            + b"FV/xIN2k8Go7jtArLIyP605b071DL8C+FPYSHOXPkMMM"
+            + b"FPAKm+Nsu0nCBMQVt9mlls="
         )
 
 
 class TestDecryptCbc:
-    def test_normal(self):
+    def test_do_not_remove_padding(self):
         ciphertext = (
             b"\t\x120\xaa\xde>\xb30\xdb\xaaCX\xf8"
             + b"\x8d*l\xd5\xcf\x83U\xcbh#9z\xd49\x06\xdfCDU\x7f\xc4\x83v\x93"
             + b"\xc1\xa8\xee;@\xac\xb22?\xad9oN\xf5\x0c\xbf\x02\xf8S\xd8Hs"
             + b"\x97>C\x0c0S\xc0*o\x8d\xb2\xed'\x08\x13\x10V\xdff\x96["
         )
-        print(len(ciphertext))
         key = b"YELLOW SUBMARINE"
         iv = bytes([0] * 16)
 
-        plaintext = aes.decrypt_cbc(ciphertext, key, iv, block_size=16)
+        plaintext = aes.decrypt_cbc(
+            ciphertext, key, iv, block_size=16, remove_padding=False
+        )
+
+        assert (
+            plaintext
+            == b"I'm back and I'm ringin' the bell \nA rockin' on "
+            + b"the mike while the fly girls yel"
+        )
+
+    def test_remove_padding(self):
+        ciphertext = base64.b64decode(
+            b"CRIwqt4+szDbqkNY+I0qbNXPg1XLaCM5etQ5Bt9DRF"
+            + b"V/xIN2k8Go7jtArLIyP605b071DL8C+FPYSHOXPkMMMFP"
+            + b"AKm+Nsu0nCBMQVt9mlltpwwry7hZr+sKfPn3Uzzs0"
+        )
+        key = b"YELLOW SUBMARINE"
+        iv = bytes([0] * 16)
+
+        plaintext = aes.decrypt_cbc(
+            ciphertext, key, iv, block_size=16, remove_padding=True
+        )
 
         assert (
             plaintext
@@ -85,8 +152,10 @@ def test_encrypt_and_decrypt_cbc_returns_original_bytes():
     key = "YELLOW_SUBMARINE".encode()
     iv = bytes([0] * 16)
 
-    ciphertext = aes.encrypt_cbc(plaintext, key, iv)
-    resulting_plaintext = aes.decrypt_cbc(ciphertext, key, iv)
+    ciphertext = aes.encrypt_cbc(plaintext, key, iv, add_padding=False)
+    resulting_plaintext = aes.decrypt_cbc(
+        ciphertext, key, iv, remove_padding=False
+    )
 
     assert plaintext == resulting_plaintext
 
