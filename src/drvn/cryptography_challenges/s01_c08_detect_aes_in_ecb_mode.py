@@ -1,3 +1,6 @@
+"""
+Detect AES in ECB mode
+"""
 import logging
 import os.path
 import statistics
