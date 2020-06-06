@@ -6,9 +6,9 @@ While solving the challenges I'm developing the python package 'drvn.cryptograph
 
 Excerpt from the cryptopals challenges:
 
-```
+"
 There are tens, probably hundreds, of obscure little things you can do to take a cryptosystem that should be secure even against an adversary with more CPU cores than there are atoms in the solar system, and make it solveable with a Perl script and 15 seconds. Don't take our word for it: do the challenges and you'll see.
-```
+"
 
 Here is a quick summary of what kind of exploits I have worked on in the challenges:
 
