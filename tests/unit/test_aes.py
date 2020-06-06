@@ -1,7 +1,5 @@
 # pylint: disable=no-self-use, protected-access
 
-import pytest
-
 import drvn.cryptography.aes as aes
 
 
@@ -32,7 +30,7 @@ class TestDecryptEbc:
         assert plaintext == "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
 
 
-def test_encrypt_and_decrypt_aes_ebc_returns_original_bytes():
+def test_encrypt_and_decrypt_ebc_returns_original_bytes():
     plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
     key = "YELLOW_SUBMARINE".encode()
 
@@ -42,7 +40,6 @@ def test_encrypt_and_decrypt_aes_ebc_returns_original_bytes():
     assert plaintext == resulting_plaintext
 
 
-@pytest.mark.skip()
 class TestEncryptCbc:
     def test_normal(self):
         plaintext = (
@@ -81,3 +78,14 @@ class TestDecryptCbc:
             == b"I'm back and I'm ringin' the bell \nA rockin' on "
             + b"the mike while the fly girls yel"
         )
+
+
+def test_encrypt_and_decrypt_cbc_returns_original_bytes():
+    plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
+    key = "YELLOW_SUBMARINE".encode()
+    iv = bytes([0] * 16)
+
+    ciphertext = aes.encrypt_cbc(plaintext, key, iv)
+    resulting_plaintext = aes.decrypt_cbc(ciphertext, key, iv)
+
+    assert plaintext == resulting_plaintext
