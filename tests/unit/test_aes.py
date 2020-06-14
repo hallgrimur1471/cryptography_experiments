@@ -76,7 +76,7 @@ class TestEncryptCbc:
         iv = bytes([0] * 16)
 
         ciphertext = aes.encrypt_cbc(
-            plaintext, key, iv, block_size=16, add_padding=True
+            plaintext, key, iv, block_size=128, add_padding=True
         )
 
         assert (
@@ -95,7 +95,7 @@ class TestEncryptCbc:
         iv = bytes([0] * 16)
 
         ciphertext = aes.encrypt_cbc(
-            plaintext, key, iv, block_size=16, add_padding=False
+            plaintext, key, iv, block_size=128, add_padding=False
         )
 
         assert (
@@ -118,7 +118,7 @@ class TestDecryptCbc:
         iv = bytes([0] * 16)
 
         plaintext = aes.decrypt_cbc(
-            ciphertext, key, iv, block_size=16, remove_padding=False
+            ciphertext, key, iv, block_size=128, remove_padding=False
         )
 
         assert (
@@ -137,7 +137,7 @@ class TestDecryptCbc:
         iv = bytes([0] * 16)
 
         plaintext = aes.decrypt_cbc(
-            ciphertext, key, iv, block_size=16, remove_padding=True
+            ciphertext, key, iv, block_size=128, remove_padding=True
         )
 
         assert (

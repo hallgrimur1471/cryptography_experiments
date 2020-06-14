@@ -184,6 +184,25 @@ def generate_random_bytes(n):
     return bytes_
 
 
+def print_ciphertext_blocks(ciphertext, block_size=128):
+    block_size_bytes = block_size // 8
+    i = 0
+    j = block_size_bytes
+
+    while j <= len(ciphertext):
+        block = ciphertext[i:j]
+        print(f"{i:4} {j:4}  {block.hex()}")
+        i += block_size_bytes
+        j += block_size_bytes
+
+
+def get_block(ciphertext, i, block_size=128):
+    block_size_bytes = block_size // 8
+    p = i * block_size_bytes
+    q = p + block_size_bytes
+    return ciphertext[p:q]
+
+
 def try_cmd(*args, **kwargs):
     kwargs["check"] = True
 

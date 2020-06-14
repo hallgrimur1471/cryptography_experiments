@@ -1,4 +1,5 @@
 import random
+import logging
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -35,14 +36,15 @@ def decrypt_ebc(
     return plaintext
 
 
-def encrypt_cbc(plaintext, key, iv, block_size=16, add_padding=True):
+def encrypt_cbc(plaintext, key, iv, block_size=128, add_padding=True):
+    block_size_bytes = block_size // 8
     if add_padding:
         plaintext = utils.add_pkcs7_padding(plaintext)
 
     ciphertext = bytearray()
 
     i = 0
-    j = block_size
+    j = block_size_bytes
     v = iv
     while i < len(plaintext):
         plaintext_block = plaintext[i:j]
@@ -53,17 +55,18 @@ def encrypt_cbc(plaintext, key, iv, block_size=16, add_padding=True):
 
         ciphertext += ciphertext_block
         v = ciphertext_block
-        i += block_size
-        j += block_size
+        i += block_size_bytes
+        j += block_size_bytes
 
     return ciphertext
 
 
-def decrypt_cbc(ciphertext, key, iv, block_size=16, remove_padding=True):
+def decrypt_cbc(ciphertext, key, iv, block_size=128, remove_padding=True):
+    block_size_bytes = block_size // 8
     plaintext = bytearray()
 
     i = 0
-    j = block_size
+    j = block_size_bytes
     v = iv
     while i < len(ciphertext):
         ciphertext_block = ciphertext[i:j]
@@ -74,8 +77,8 @@ def decrypt_cbc(ciphertext, key, iv, block_size=16, remove_padding=True):
         plaintext += decrypted_block
 
         v = ciphertext_block
-        i += block_size
-        j += block_size
+        i += block_size_bytes
+        j += block_size_bytes
 
     if remove_padding:
         plaintext = utils.remove_pkcs7_padding(plaintext)
@@ -83,16 +86,16 @@ def decrypt_cbc(ciphertext, key, iv, block_size=16, remove_padding=True):
     return bytes(plaintext)
 
 
-def detect_mode(ciphertext) -> str:
+def detect_mode(ciphertext, block_size=128) -> str:
     """
-    Looks for recurring 16 bytes in the ciphertext.
-    If recurring 16 bytes are found the cihpertext is likely
+    Looks for recurring {block_size} bits in the ciphertext.
+    If recurring {block_size} bits are found the cihpertext is likely
     to have been encrypted in ecb mode.
     """
     blocks = set()
-    block_size = 16
+    block_size_bytes = block_size // 8
     i = 0
-    j = block_size
+    j = block_size_bytes
 
     while j <= len(ciphertext):
         block = ciphertext[i:j]
@@ -105,8 +108,8 @@ def detect_mode(ciphertext) -> str:
             return "ecb"
 
         blocks.add(block)
-        i += block_size
-        j += block_size
+        i += block_size_bytes
+        j += block_size_bytes
 
     return "unknown"
 
@@ -133,3 +136,99 @@ def encryption_oracle(plaintext):
         ciphertext = encrypt_cbc(plaintext_modified, key, iv)
 
     return ciphertext
+
+
+def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
+    cipher_block_size = determine_cipher_block_size_by_prependable_plaintext(
+        encrypt_func
+    )
+    logging.info(f"Cipher has block size {cipher_block_size}")
+
+    prefix = ("A" * 1000).encode()
+    ciphertext = encrypt_func(prefix)
+    cipher_mode = detect_mode(ciphertext, block_size=cipher_block_size)
+    logging.info(f"Cipher is using '{cipher_mode}' mode")
+    if cipher_mode != "ecb":
+        raise RuntimeError("Unable to decrypt, cipher is not in ECB mode")
+
+    ciphertext_length_no_prefix = len(encrypt_func(b""))
+    logging.info(
+        f"ciphertext length with no prefix: {ciphertext_length_no_prefix}"
+    )
+    prefix = bytes(("A" * ciphertext_length_no_prefix).encode())
+    ciphertext = encrypt_func(prefix)
+    # utils.print_ciphertext_blocks(ciphertext, block_size=cipher_block_size)
+
+    block_size_bytes = cipher_block_size // 8
+    block_i = (ciphertext_length_no_prefix // block_size_bytes) - 1
+    logging.info(f"block_i: {block_i}")
+
+    base_prefix = prefix[0:-1]
+    known = b""
+    for r in range(0, ciphertext_length_no_prefix):
+        ciphertext = encrypt_func(base_prefix)
+        target_block = utils.get_block(
+            ciphertext, block_i, block_size=cipher_block_size
+        )
+
+        k = len(base_prefix) - 1
+        for i in range(0, 256):
+            byte_ = bytes([i])
+            prefix = base_prefix + known + byte_
+            ciphertext = encrypt_func(prefix)
+            block = utils.get_block(
+                ciphertext, block_i, block_size=cipher_block_size
+            )
+            # print(i, block.hex(), target_block.hex())
+            if block == target_block:
+                known += byte_
+                base_prefix = base_prefix[0:-1]
+                # base_prefix[k] = i
+                # k -= 1
+                # base_prefix = base_prefix[1:]
+                print(base_prefix + known)
+                break
+
+    print(known)
+    known = utils.remove_pkcs7_padding(known)
+    print(known.decode())
+
+    # print(len(prefix))
+    # prefix = prefix[0:-1]
+    # print(len(prefix))
+    # ciphertext = encrypt_func(prefix)
+    # utils.print_ciphertext_blocks(ciphertext, block_size=cipher_block_size)
+    # target_block = utils.get_block(
+    #    ciphertext, block_i, block_size=cipher_block_size
+    # )
+
+    # base_prefix = prefix
+
+
+def determine_cipher_block_size_by_prependable_plaintext(encrypt_func):
+    """
+    Determine block size of a cipher that has an encryption API like this:
+
+    AES_ECB(attacker_controlled || unknown_plaintext, unknown_key)
+
+    Args:
+        encrypt_func (function): Wrapper to victim's encryption API.
+            encrypt_func takes one bytes argument, prefix,  which will be
+            prepended to the unknown plaintext before it's encrypted.
+            encrypt_func returns the resulting ciphertext.
+    Returns:
+        cipher_block_size (int). Cipher block size in bits.
+    """
+    first_ciphertext_length = len(encrypt_func(b""))
+    i = 1
+    while True:
+        prefix = ("A" * i).encode()
+        next_ciphertext_length = len(encrypt_func(prefix))
+
+        if next_ciphertext_length != first_ciphertext_length:
+            cipher_block_size = (
+                next_ciphertext_length - first_ciphertext_length
+            ) * 8
+            return cipher_block_size
+
+        i += 1
