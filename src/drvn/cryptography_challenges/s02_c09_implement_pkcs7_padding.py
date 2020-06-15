@@ -10,8 +10,6 @@ import drvn.cryptography.utils as utils
 
 
 def run_challenge():
-    logging.info("Running challenge 9 ...")
-
     plaintext = "YELLOW_SUBMARINE".encode()
 
     plaintext_padded = utils.add_pkcs7_padding(plaintext, block_size=20)

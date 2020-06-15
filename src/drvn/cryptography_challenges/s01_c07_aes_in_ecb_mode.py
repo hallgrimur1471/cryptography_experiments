@@ -14,8 +14,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 7 ...")
-
     key = b"YELLOW SUBMARINE"
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     decryptor = cipher.decryptor()

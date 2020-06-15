@@ -2,10 +2,12 @@ import os
 import re
 import importlib
 import importlib.resources
+import logging
 from pathlib import Path
 
 
 def run(challenge_num):
+    logging.info(f"Running challenge {challenge_num} ...")
     challenge_module_name = _get_challenge_module_name(challenge_num)
     import_path = f"drvn.cryptography_challenges.{challenge_module_name}"
 

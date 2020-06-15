@@ -9,8 +9,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 10 ...")
-
     key = b"YELLOW SUBMARINE"
     ciphertext = base64.b64decode(
         resources.get_contents("c10_implement_cbc_mode.in")

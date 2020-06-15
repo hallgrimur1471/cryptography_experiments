@@ -10,8 +10,6 @@ import drvn.cryptography.aes as aes
 
 
 def run_challenge():
-    logging.info("Running challenge 12 ...")
-
     victim_encryption_api = VictimEncryptionAPI()
     encrypt_func = victim_encryption_api.encrypt
 

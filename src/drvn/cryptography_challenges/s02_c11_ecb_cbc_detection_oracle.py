@@ -9,8 +9,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 11 ...")
-
     plaintext = base64.b64decode(
         resources.get_contents("c11_ecb_cbc_detection_oracle.in")
     )

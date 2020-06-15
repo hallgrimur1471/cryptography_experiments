@@ -7,6 +7,7 @@ from cryptography.hazmat.backends import default_backend
 import drvn.cryptography.utils as utils
 
 
+# TODO: rename to encrypt_ecb
 def encrypt_ebc(plaintext, key, add_padding=True):
     cipher_obj = Cipher(
         algorithms.AES(key), modes.ECB(), backend=default_backend()

@@ -8,8 +8,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 8 ...")
-
     ciphertexts = get_ciphertexts()
     for i, ciphertext in enumerate(ciphertexts):
         mode = aes.detect_mode(ciphertext)

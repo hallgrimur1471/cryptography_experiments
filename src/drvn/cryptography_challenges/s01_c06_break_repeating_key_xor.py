@@ -12,8 +12,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 6 ...")
-
     data = resources.get_contents("c06_break_repeating_key_xor.in")
     cipher = list(map(lambda line: line.rstrip(), data.split("\n")))
     cipher = list(map(lambda line: base64.b64decode(line), cipher))

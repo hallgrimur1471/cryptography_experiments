@@ -9,8 +9,6 @@ import drvn.cryptography_challenges._resources as resources
 
 
 def run_challenge():
-    logging.info("Running challenge 4 ...")
-
     data = resources.get_contents("c04_detect_single_character_xor.in")
     data = [line.rstrip() for line in data.split("\n")]
     data = [bytes.fromhex(line) for line in data]
