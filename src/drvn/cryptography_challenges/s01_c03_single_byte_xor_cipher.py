@@ -9,6 +9,7 @@ import drvn.cryptography.xor as xor
 
 def run_challenge():
     logging.info("Running challenge 3 ...")
+    print("asdfasdf")
     cipher = bytes.fromhex(
         "1b37373331363f78151b7f2b783431333d78397828372d363c7"
         "8373e783a393b3736"

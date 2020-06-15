@@ -47,6 +47,12 @@ Runs unit- and integration tests using multiple python versions (specified by to
 tox
 ```
 
+To get test coverage report and run unit- and integration tests using python3.8, pytest and pytest-cov:
+
+```
+pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
+```
+
 ### Running unit tests
 
 ```

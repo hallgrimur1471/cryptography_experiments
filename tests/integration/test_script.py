@@ -20,21 +20,10 @@ class TestScript:
     def test_help_exits_with_returncode_zero(self):
         utils.try_cmd("drvn_cryptography_run_cryptopals_challenge --help")
 
-    def test_all_challenges_exit_with_returncode_zero(self, workspace):
-        current_challenge = 1
-        while True:
-            try:
-                output = utils.try_cmd(
-                    f"drvn_cryptography_run_cryptopals_challenge {current_challenge}",
-                    stderr=subprocess.PIPE,
-                    cwd=workspace,
-                )
-            except RuntimeError as e:
-                if re.search("Challenge [0-9]+ does not exist", str(e)):
-                    break
-                raise
-
-            current_challenge += 1
+    def test_cli_call_to_a_challenge_work(self):
+        utils.try_cmd("drvn_cryptography_run_cryptopals_challenge 1")
+        utils.try_cmd("drvn_cryptography_run_cryptopals_challenge 2")
+        utils.try_cmd("drvn_cryptography_run_cryptopals_challenge 3")
 
 
 def _set_up_workspace():
