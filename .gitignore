@@ -9,5 +9,9 @@
 **/__pycache__
 .mypy_cache
 
+# Test coverage results
+.coverage
+htmlcov
+
 # Tox
 .tox

@@ -8,6 +8,8 @@ Here is a quick summary of what kind of exploits I have worked on in the challen
 
 1. A method to decrypt any english text that has been encrypted using repeating-key XOR using an unknown key.
 2. Detect if ciphertext is AES EBC encrypted.
+3. Decrypt unknown_plaintext with repeated calls to an API like:
+AES_ECB_ENCRYPT(attacker_controlled_bytes + unknown_plaintext, unknown_key)
 
 ## Usage
 

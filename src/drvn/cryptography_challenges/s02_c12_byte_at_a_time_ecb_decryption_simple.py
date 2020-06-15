@@ -13,9 +13,9 @@ def run_challenge():
     logging.info("Running challenge 12 ...")
 
     victim_encryption_api = VictimEncryptionAPI()
-    aes.decrypt_ecb_encryption_with_prependable_plaintext(
-        victim_encryption_api.encrypt
-    )
+    encrypt_func = victim_encryption_api.encrypt
+
+    aes.decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func)
 
 
 class VictimEncryptionAPI:
