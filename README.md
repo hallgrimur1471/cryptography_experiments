@@ -47,7 +47,7 @@ Runs unit- and integration tests using multiple python versions (specified by to
 tox
 ```
 
-To get test coverage report you can try this:
+To get test coverage report you can try this (you need pytest and pytest-cov installed):
 
 ```
 pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
