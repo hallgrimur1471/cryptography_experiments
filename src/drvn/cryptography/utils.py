@@ -2,6 +2,8 @@
 Various utility functions
 """
 
+import logging
+
 import subprocess
 import base64
 import random
@@ -170,6 +172,7 @@ def add_pkcs7_padding(bytes_, block_size=16):
     return bytes_padded
 
 
+# TODO: raise exception if invalid padding
 def remove_pkcs7_padding(bytes_):
     num_pads = bytes_[-1]
     return bytes_[0 : len(bytes_) - num_pads]
