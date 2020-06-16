@@ -2,6 +2,8 @@
 Various utility functions
 """
 
+import logging
+
 import subprocess
 import base64
 import random
@@ -159,7 +161,7 @@ def add_pkcs7_padding(bytes_, block_size=16):
     Add padding to bytes_
 
     Examples:
-        b'YELLOW_SUBMARINE', block_size=10 -> b'YELLOW_SUBMARINE\x04\x04\x04\x04'
+        b'YELLOW_SUBMARINE',block_size=10 -> b'YELLOW_SUBMARINE\x04\x04\x04\x04'
     """
     if block_size <= 0 or block_size > 255:
         raise ValueError("block_size must be in the range [1, 255]")
@@ -171,8 +173,21 @@ def add_pkcs7_padding(bytes_, block_size=16):
 
 
 def remove_pkcs7_padding(bytes_):
+    if not is_valid_pkcs7_padding(bytes_):
+        raise ValueError(
+            "Can not remove pkcs7 padding because the padding is invalid."
+        )
     num_pads = bytes_[-1]
     return bytes_[0 : len(bytes_) - num_pads]
+
+
+def is_valid_pkcs7_padding(bytes_):
+    num_pads = bytes_[-1]
+    start_pad_i = len(bytes_) - num_pads
+    for byte in bytes_[start_pad_i:]:
+        if byte != num_pads:
+            return False
+    return True
 
 
 def generate_random_bytes(n):

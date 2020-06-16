@@ -92,3 +92,9 @@ class TestRemovePkcs7Padding:
         plaintext = utils.remove_pkcs7_padding(plaintext_padded)
 
         assert plaintext == b"YELLOW SUBMARINE"
+
+    def test_invalid(self):
+        plaintext_padded = b"YELLOW SUBMARINE\x05\x04\x04\x04"
+
+        with pytest.raises(ValueError):
+            utils.remove_pkcs7_padding(plaintext_padded)

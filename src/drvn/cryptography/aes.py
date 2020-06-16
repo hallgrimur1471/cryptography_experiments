@@ -158,14 +158,12 @@ def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
     )
     prefix = bytes(("A" * ciphertext_length_no_prefix).encode())
     ciphertext = encrypt_func(prefix)
-    # utils.print_ciphertext_blocks(ciphertext, block_size=cipher_block_size)
 
     block_size_bytes = cipher_block_size // 8
     block_i = (ciphertext_length_no_prefix // block_size_bytes) - 1
-    logging.info(f"block_i: {block_i}")
 
     base_prefix = prefix[0:-1]
-    known = b""
+    plaintext = b""
     for r in range(0, ciphertext_length_no_prefix):
         ciphertext = encrypt_func(base_prefix)
         target_block = utils.get_block(
@@ -175,35 +173,21 @@ def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
         k = len(base_prefix) - 1
         for i in range(0, 256):
             byte_ = bytes([i])
-            prefix = base_prefix + known + byte_
+            prefix = base_prefix + plaintext + byte_
             ciphertext = encrypt_func(prefix)
             block = utils.get_block(
                 ciphertext, block_i, block_size=cipher_block_size
             )
-            # print(i, block.hex(), target_block.hex())
             if block == target_block:
-                known += byte_
+                plaintext += byte_
                 base_prefix = base_prefix[0:-1]
-                # base_prefix[k] = i
-                # k -= 1
-                # base_prefix = base_prefix[1:]
-                print(base_prefix + known)
+                print(base_prefix + plaintext)
                 break
 
-    print(known)
-    known = utils.remove_pkcs7_padding(known)
-    print(known.decode())
+    plaintext = utils.remove_pkcs7_padding(plaintext)
+    logging.info(f"Resulting plaintext:\n{plaintext.decode()}")
 
-    # print(len(prefix))
-    # prefix = prefix[0:-1]
-    # print(len(prefix))
-    # ciphertext = encrypt_func(prefix)
-    # utils.print_ciphertext_blocks(ciphertext, block_size=cipher_block_size)
-    # target_block = utils.get_block(
-    #    ciphertext, block_i, block_size=cipher_block_size
-    # )
-
-    # base_prefix = prefix
+    return plaintext
 
 
 def determine_cipher_block_size_by_prependable_plaintext(encrypt_func):
