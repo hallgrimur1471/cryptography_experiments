@@ -9,7 +9,7 @@ Here is a quick summary of what kind of exploits I have worked on in the challen
 1. A method to decrypt any english text that has been encrypted using repeating-key XOR using an unknown key.
 2. Detect if ciphertext is AES ECB encrypted.
 3. Decrypt unknown_plaintext with repeated calls to an API like:
-AES_ECB_ENCRYPT(attacker_controlled_bytes + unknown_plaintext, unknown_key)
+AES_ECB_ENCRYPT(unknown_prefix + attacker_controlled_bytes + unknown_plaintext, unknown_key)
 4. AES CBC bitflipping attacks: Modifying a byte in AES CBC ciphertext block scrambles the corresponding plaintext block but in the next plaintext block only the byte in the same position gets modified)
 
 ## History
