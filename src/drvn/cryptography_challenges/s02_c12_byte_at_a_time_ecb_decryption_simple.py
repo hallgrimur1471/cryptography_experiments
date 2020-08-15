@@ -13,7 +13,7 @@ def run_challenge():
     victim_encryption_api = VictimEncryptionAPI()
     encrypt_func = victim_encryption_api.encrypt
 
-    aes.decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func)
+    aes.decrypt_ecb_encryption_with_prependable_plaintext_1(encrypt_func)
 
 
 class VictimEncryptionAPI:

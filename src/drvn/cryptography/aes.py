@@ -139,7 +139,20 @@ def encryption_oracle(plaintext):
     return ciphertext
 
 
-def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
+def decrypt_ecb_encryption_with_prependable_plaintext_1(encrypt_func):
+    """
+    Determine unknown_plaintext of a cipher that has an encryption API like this:
+
+    AES_ECB(attacker_controlled || unknown_plaintext, unknown_key)
+
+    Args:
+        encrypt_func (function): Wrapper to victim's encryption API.
+            encrypt_func takes one bytes argument, prefix,  which will be
+            prepended to the unknown plaintext before it's encrypted.
+            encrypt_func returns the resulting ciphertext.
+    Returns:
+        unknown_plaintext (bytes)
+    """
     cipher_block_size = determine_cipher_block_size_by_prependable_plaintext(
         encrypt_func
     )
@@ -164,13 +177,12 @@ def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
 
     base_prefix = prefix[0:-1]
     plaintext = b""
-    for r in range(0, ciphertext_length_no_prefix):
+    for _ in range(0, ciphertext_length_no_prefix):
         ciphertext = encrypt_func(base_prefix)
         target_block = utils.get_block(
             ciphertext, block_i, block_size=cipher_block_size
         )
 
-        k = len(base_prefix) - 1
         for i in range(0, 256):
             byte_ = bytes([i])
             prefix = base_prefix + plaintext + byte_
@@ -190,11 +202,198 @@ def decrypt_ecb_encryption_with_prependable_plaintext(encrypt_func):
     return plaintext
 
 
+def decrypt_ecb_encryption_with_injectable_plaintext(encrypt_func):
+    """
+    Determine unknown_plaintext of a cipher that has an encryption API like this:
+
+    AES_ECB(unknown_fixed_prefix || attacker_controlled || unknown_plaintext,
+            unknown_key)
+
+    Args:
+        encrypt_func (function): Wrapper to victim's encryption API.
+            encrypt_func takes one bytes argument, attacker_controlled,
+            which will be injected to the unknown plaintext before it's
+            encrypted.
+            encrypt_func returns the resulting ciphertext.
+    Returns:
+        unknown_plaintext (bytes)
+    """
+    # figure out cipher block size
+    cipher_block_size = determine_cipher_block_size_by_prependable_plaintext(
+        encrypt_func
+    )
+    logging.debug(f"Cipher has block size {cipher_block_size}")
+
+    # figure out cipher mode
+    user_input = ("A" * 1000).encode()
+    ciphertext = encrypt_func(user_input)
+    cipher_mode = detect_mode(ciphertext, block_size=cipher_block_size)
+    logging.debug(f"Cipher is using '{cipher_mode}' mode")
+    if cipher_mode != "ecb":
+        raise RuntimeError("Unable to decrypt, cipher is not in ECB mode")
+
+    # figure out fixed_prefix length, lets see how many 'B' we need to input to get
+    # num_continuous identical ciphertext blocks
+    prefix_length = figure_out_prefix_length(encrypt_func, cipher_block_size)
+    logging.debug(f"'unknown_fixed_prefix' length is {prefix_length}")
+
+    # figure out unkown_plaintext length
+    block_size_bytes = cipher_block_size // 8
+    prefix_filler_length = block_size_bytes - (prefix_length % block_size_bytes)
+    user_input = ("A" * (prefix_length + prefix_filler_length)).encode()
+    ciphertext = encrypt_func(user_input)
+    plaintext_length = len(ciphertext) - (prefix_length + prefix_filler_length)
+
+    # figure out unkown_plaintext bytes
+    base_user_input = ("A" * (prefix_filler_length + plaintext_length)).encode()
+    base_user_input = base_user_input[0:-1]  # leave room to edit 1 byte
+    block_i = (
+        (prefix_length + prefix_filler_length + plaintext_length)
+        // block_size_bytes
+    ) - 1
+    known_plaintext = b""
+    for _ in range(0, plaintext_length):
+        ciphertext = encrypt_func(base_user_input)
+        target_block = utils.get_block(
+            ciphertext, block_i, block_size=cipher_block_size
+        )
+        for i in range(0, 256):
+            byte_ = bytes([i])
+            user_input = base_user_input + known_plaintext + byte_
+            ciphertext = encrypt_func(user_input)
+            block = utils.get_block(
+                ciphertext, block_i, block_size=cipher_block_size
+            )
+            if block == target_block:
+                known_plaintext += byte_
+                base_user_input = base_user_input[0:-1]
+                # print(base_user_input + plaintext)
+                break
+
+    plaintext = utils.remove_pkcs7_padding(known_plaintext)
+
+    return plaintext
+
+    # return ""
+
+    # unknown_plaintext_start = (
+    #    fixed_prefix_length
+    #    + b_chars_in_fixed_prefix_blocks
+    #    + (num_continuous * block_size_bytes)
+    # )
+    # print(f"{unknown_plaintext_start=}")
+
+    # return
+
+    # prefix_fixer = (
+    #    "B"
+    #    * (b_chars_in_fixed_prefix_blocks + (num_continuous * block_size_bytes))
+    # ).encode()
+
+    # user_input = prefix_fixer
+    # unknown_plaintext_length_no_user_input = len(encrypt_func(user_input))
+    # logging.info(
+    #    f"unknown_plaintext length with no user_input: {unknown_plaintext_length_no_user_input}"
+    # )
+    # user_input = bytes(("A" * unknown_plaintext_length_no_user_input).encode())
+    # ciphertext = encrypt_func(user_input)
+    # utils.print_ciphertext_blocks(ciphertext)
+
+    # block_i = (
+    #    (unknown_plaintext_start // block_size_bytes)
+    #    + (unknown_plaintext_length_no_user_input // block_size_bytes)
+    # ) - 1
+    # print(f"{block_i=}")
+
+    # base_user_input = user_input[0:-1]
+    # plaintext = b""
+    # for _ in range(0, unknown_plaintext_length_no_user_input):
+    #    ciphertext = encrypt_func(base_user_input)
+    #    target_block = utils.get_block(
+    #        ciphertext, block_i, block_size=cipher_block_size
+    #    )
+
+    #    for i in range(0, 256):
+    #        byte_ = bytes([i])
+    #        user_input = base_user_input + plaintext + byte_
+    #        ciphertext = encrypt_func(user_input)
+    #        block = utils.get_block(
+    #            ciphertext, block_i, block_size=cipher_block_size
+    #        )
+    #        if block == target_block:
+    #            plaintext += byte_
+    #            base_user_input = base_user_input[0:-1]
+    #            # print(base_user_input + plaintext)
+    #            break
+
+    # plaintext = utils.remove_pkcs7_padding(plaintext)
+    # logging.info(f"Resulting plaintext:\n{plaintext.decode()}")
+
+    # return plaintext
+
+
+def figure_out_prefix_length(encrypt_func, cipher_block_size):
+    """
+    Determine length of unknown_fixed_prefix of a cipher that has an
+    encryption API like this:
+
+    AES_ECB(unknown_fixed_prefix || attacker_controlled || unknown_plaintext,
+            unknown_key)
+
+    Args:
+        encrypt_func (function): Wrapper to victim's encryption API.
+            encrypt_func takes one bytes argument, attacker_controlled,
+            which will be injected to the unknown plaintext before it's
+            encrypted.
+            encrypt_func returns the resulting ciphertext.
+    Returns:
+        len(unknown_fixed_prefix) (int)
+    """
+    char = "B"
+    num_continuous = 10
+    i = 0
+    user_input = (char * i).encode()
+    ciphertext = encrypt_func(user_input)
+    while (
+        utils.max_num_identical_continuous_ciphertext_blocks(
+            ciphertext, block_size=cipher_block_size
+        )
+        != num_continuous
+    ):
+        i += 1
+        user_input = (char * i).encode()
+        ciphertext = encrypt_func(user_input)
+    block_size_bytes = cipher_block_size // 8
+    b_chars_in_fixed_prefix_blocks = i - (num_continuous * block_size_bytes)
+
+    i = 0
+    while True:
+        last_block = None
+        found_num_continuous = True
+        for j in range(i, i + num_continuous):
+            block = utils.get_block(ciphertext, j, block_size=cipher_block_size)
+            if last_block and last_block != block:
+                found_num_continuous = False
+                break
+            last_block = block
+        if found_num_continuous:
+            break
+        i += 1
+
+    fixed_prefix_length = i * block_size_bytes - b_chars_in_fixed_prefix_blocks
+
+    return fixed_prefix_length
+
+
 def determine_cipher_block_size_by_prependable_plaintext(encrypt_func):
     """
     Determine block size of a cipher that has an encryption API like this:
 
     AES_ECB(attacker_controlled || unknown_plaintext, unknown_key)
+
+    or this:
+
+    AES_ECB(fixed_prefix || attacker_controlled || unknown_plaintext, unknown_key)
 
     Args:
         encrypt_func (function): Wrapper to victim's encryption API.

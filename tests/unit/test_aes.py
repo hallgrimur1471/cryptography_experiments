@@ -1,6 +1,8 @@
 # pylint: disable=no-self-use, protected-access
 import base64
 
+import pytest
+
 import drvn.cryptography.aes as aes
 
 
@@ -187,6 +189,59 @@ class TestDetectMode:
         mode = aes.detect_mode(ciphertext)
 
         assert mode != "ecb"
+
+
+class TestFigureOutPrefixLength:
+    def test_normal(self):
+        unknown_fixed_prefix = "12345678901234567".encode()
+        unknown_plaintext = "asdfasdf".encode()
+        cipher_block_size = 128
+        encrypt_func = self._create_victim_api(
+            unknown_fixed_prefix, unknown_plaintext
+        )
+
+        length = aes.figure_out_prefix_length(encrypt_func, cipher_block_size)
+
+        assert length == 17
+
+    def test_prefix_contains_Bs(self):
+        unknown_fixed_prefix = (
+            "1234567890123456BBB".encode() + "BBBBBBBBBBBBBBBA".encode()
+        )
+        unknown_plaintext = "asdfasdf".encode()
+        cipher_block_size = 128
+        encrypt_func = self._create_victim_api(
+            unknown_fixed_prefix, unknown_plaintext
+        )
+
+        length = aes.figure_out_prefix_length(encrypt_func, cipher_block_size)
+
+        assert length == 19 + 16
+
+    def test_prefix_ends_with_Bs(self):
+        unknown_fixed_prefix = (
+            "1234567890123456BBB".encode() + "BBBBBBBBBBBBBBBB".encode()
+        )
+        unknown_plaintext = "asdfasdf".encode()
+        cipher_block_size = 128
+        encrypt_func = self._create_victim_api(
+            unknown_fixed_prefix, unknown_plaintext
+        )
+
+        length = aes.figure_out_prefix_length(encrypt_func, cipher_block_size)
+
+        assert length == 19 + 16
+
+    def _create_victim_api(self, unknown_fixed_prefix, unknown_plaintext):
+        def encrypt_func(user_input):
+            key = "MELLOW SUBMARINE".encode()
+            plaintext_to_encrypt = (
+                unknown_fixed_prefix + user_input + unknown_plaintext
+            )
+            ciphertext = aes.encrypt_ebc(plaintext_to_encrypt, key)
+            return ciphertext
+
+        return encrypt_func
 
 
 class TestGenerateRandomAesKey:

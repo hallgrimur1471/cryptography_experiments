@@ -190,6 +190,51 @@ def is_valid_pkcs7_padding(bytes_):
     return True
 
 
+def max_num_identical_ciphertext_blocks(ciphertext, block_size=128):
+    block_size_bytes = block_size // 8
+    i = 0
+    j = block_size_bytes
+
+    num_blocks = dict()
+
+    while j <= len(ciphertext):
+        block = ciphertext[i:j]
+        if block not in num_blocks:
+            num_blocks[block] = 1
+        else:
+            num_blocks[block] += 1
+
+        i += block_size_bytes
+        j += block_size_bytes
+
+    max_num = max([num_blocks for block, num_blocks in num_blocks.items()])
+
+    return max_num
+
+
+def max_num_identical_continuous_ciphertext_blocks(ciphertext, block_size=128):
+    block_size_bytes = block_size // 8
+    i = 0
+    j = block_size_bytes
+
+    max_num = 0
+    last_block = None
+    counter = 0
+    while j <= len(ciphertext):
+        block = ciphertext[i:j]
+        if block == last_block:
+            counter += 1
+            max_num = max(max_num, counter)
+        else:
+            counter = 1
+
+        i += block_size_bytes
+        j += block_size_bytes
+        last_block = block
+
+    return max_num
+
+
 def generate_random_bytes(n):
     byte_list = []
     for _ in range(0, n):
@@ -204,11 +249,13 @@ def print_ciphertext_blocks(ciphertext, block_size=128):
     i = 0
     j = block_size_bytes
 
+    counter = 0
     while j <= len(ciphertext):
         block = ciphertext[i:j]
-        print(f"{i:4} {j:4}  {block.hex()}")
+        print(f"{counter:3} {i:4} {j:4}  {block.hex()}")
         i += block_size_bytes
         j += block_size_bytes
+        counter += 1
 
 
 def get_block(ciphertext, i, block_size=128):

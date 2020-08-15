@@ -98,3 +98,33 @@ class TestRemovePkcs7Padding:
 
         with pytest.raises(ValueError):
             utils.remove_pkcs7_padding(plaintext_padded)
+
+
+class TestMaxNumIdenticalContinuousCiphertextBlocks:
+    def test_normal(self):
+        ciphertext = (
+            bytes.fromhex("fbddc8f375e1d967ca17358b98382d7c")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("f0b24d856e59d62b41b0b371834d793a")
+        )
+
+        n = utils.max_num_identical_continuous_ciphertext_blocks(ciphertext)
+
+        assert n == 4
+
+    def test_non_continuous(self):
+        ciphertext = (
+            bytes.fromhex("fbddc8f375e1d967ca17358b98382d7c")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("f0b24d856e59d62b41b0b371834d793a")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+            + bytes.fromhex("44cd65fd1ccf70b3229e44dc02284459")
+        )
+
+        n = utils.max_num_identical_continuous_ciphertext_blocks(ciphertext)
+
+        assert n == 3

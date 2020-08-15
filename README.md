@@ -50,7 +50,7 @@ tox
 To get test coverage report you can try this (you need pytest and pytest-cov installed):
 
 ```
-pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
+python3.8 -m pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
 ```
 
 ### Running unit tests
