@@ -1,8 +1,8 @@
 # Breaking Cryptography
 
-This repository currently is being developed while I work on the [cryptopals crypto challenges](http://cryptopals.com) which are about breaking cryptographic systems.
+This repository currently is being developed while I work on the [cryptopals crypto challenges](http://cryptopals.com) which are about exploiting cryptographic systems.
 
-While solving the challenges I'm developing the python package 'drvn.cryptography' which contains cryptography utility functions and methods to exploit cryptographic systems.
+While solving the challenges I'm developing the python package 'drvn.cryptography' which contains cryptography exploit utility functions.
 
 Here is a quick summary of what kind of exploits I have worked on in the challenges:
 
