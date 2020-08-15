@@ -258,6 +258,23 @@ def print_ciphertext_blocks(ciphertext, block_size=128):
         counter += 1
 
 
+def print_plaintext_blocks(plaintext, block_size=128):
+    block_size_bytes = block_size // 8
+    i = 0
+    j = block_size_bytes
+
+    counter = 0
+    while j <= len(plaintext):
+        block = plaintext[i:j]
+        print(f"{counter:3} {i:4} {j:4}  {block}")
+        i += block_size_bytes
+        j += block_size_bytes
+        counter += 1
+    if j > len(plaintext):
+        j = len(plaintext)
+        print(f"{counter:3} {i:4} {j:4}  {block}")
+
+
 def get_block(ciphertext, i, block_size=128):
     block_size_bytes = block_size // 8
     p = i * block_size_bytes
