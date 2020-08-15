@@ -29,6 +29,6 @@ class VictimEncryptionAPI:
         )
         plaintext_to_encrypt = prefix + unknown_plaintext
 
-        ciphertext = aes.encrypt_ebc(plaintext_to_encrypt, self._unknown_key)
+        ciphertext = aes.encrypt_ecb(plaintext_to_encrypt, self._unknown_key)
 
         return ciphertext

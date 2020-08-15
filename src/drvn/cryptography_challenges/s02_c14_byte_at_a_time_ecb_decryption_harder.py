@@ -46,7 +46,7 @@ class VictimAPI:
             self._random_prefix + user_input + unknown_plaintext
         )
 
-        ciphertext = aes.encrypt_ebc(plaintext_to_encrypt, self._unknown_key)
+        ciphertext = aes.encrypt_ecb(plaintext_to_encrypt, self._unknown_key)
 
         self.num_encrypt_func_calls += 1
         return ciphertext

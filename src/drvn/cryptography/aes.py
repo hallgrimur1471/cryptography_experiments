@@ -7,8 +7,7 @@ from cryptography.hazmat.backends import default_backend
 import drvn.cryptography.utils as utils
 
 
-# TODO: rename to encrypt_ecb
-def encrypt_ebc(plaintext, key, add_padding=True):
+def encrypt_ecb(plaintext, key, add_padding=True):
     cipher_obj = Cipher(
         algorithms.AES(key), modes.ECB(), backend=default_backend()
     )
@@ -50,7 +49,7 @@ def encrypt_cbc(plaintext, key, iv, block_size=128, add_padding=True):
     while i < len(plaintext):
         plaintext_block = plaintext[i:j]
         plaintext_block_xored = utils.fixed_xor(v, plaintext_block)
-        ciphertext_block = encrypt_ebc(
+        ciphertext_block = encrypt_ecb(
             plaintext_block_xored, key, add_padding=False
         )
 
@@ -131,7 +130,7 @@ def encryption_oracle(plaintext):
     key = generate_random_aes_key()
 
     if random.randint(0, 1) == 1:
-        ciphertext = encrypt_ebc(plaintext_modified, key)
+        ciphertext = encrypt_ecb(plaintext_modified, key)
     else:
         iv = utils.generate_random_bytes(16)
         ciphertext = encrypt_cbc(plaintext_modified, key, iv)
@@ -273,63 +272,6 @@ def decrypt_ecb_encryption_with_injectable_plaintext(encrypt_func):
     plaintext = utils.remove_pkcs7_padding(known_plaintext)
 
     return plaintext
-
-    # return ""
-
-    # unknown_plaintext_start = (
-    #    fixed_prefix_length
-    #    + b_chars_in_fixed_prefix_blocks
-    #    + (num_continuous * block_size_bytes)
-    # )
-    # print(f"{unknown_plaintext_start=}")
-
-    # return
-
-    # prefix_fixer = (
-    #    "B"
-    #    * (b_chars_in_fixed_prefix_blocks + (num_continuous * block_size_bytes))
-    # ).encode()
-
-    # user_input = prefix_fixer
-    # unknown_plaintext_length_no_user_input = len(encrypt_func(user_input))
-    # logging.info(
-    #    f"unknown_plaintext length with no user_input: {unknown_plaintext_length_no_user_input}"
-    # )
-    # user_input = bytes(("A" * unknown_plaintext_length_no_user_input).encode())
-    # ciphertext = encrypt_func(user_input)
-    # utils.print_ciphertext_blocks(ciphertext)
-
-    # block_i = (
-    #    (unknown_plaintext_start // block_size_bytes)
-    #    + (unknown_plaintext_length_no_user_input // block_size_bytes)
-    # ) - 1
-    # print(f"{block_i=}")
-
-    # base_user_input = user_input[0:-1]
-    # plaintext = b""
-    # for _ in range(0, unknown_plaintext_length_no_user_input):
-    #    ciphertext = encrypt_func(base_user_input)
-    #    target_block = utils.get_block(
-    #        ciphertext, block_i, block_size=cipher_block_size
-    #    )
-
-    #    for i in range(0, 256):
-    #        byte_ = bytes([i])
-    #        user_input = base_user_input + plaintext + byte_
-    #        ciphertext = encrypt_func(user_input)
-    #        block = utils.get_block(
-    #            ciphertext, block_i, block_size=cipher_block_size
-    #        )
-    #        if block == target_block:
-    #            plaintext += byte_
-    #            base_user_input = base_user_input[0:-1]
-    #            # print(base_user_input + plaintext)
-    #            break
-
-    # plaintext = utils.remove_pkcs7_padding(plaintext)
-    # logging.info(f"Resulting plaintext:\n{plaintext.decode()}")
-
-    # return plaintext
 
 
 def figure_out_prefix_length(encrypt_func, cipher_block_size):

@@ -85,7 +85,7 @@ class VictimAPI:
         profile = profile_for(email)
         profile_serialised = serialise_cookie(profile)
         profile_plaintext = profile_serialised.encode()
-        profile_ciphertext = aes.encrypt_ebc(profile_plaintext, self._key)
+        profile_ciphertext = aes.encrypt_ecb(profile_plaintext, self._key)
         return profile_ciphertext
 
     def add_profile_to_system(self, profile_ciphertext):

@@ -11,7 +11,7 @@ class TestEncryptEbc:
         plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
         key = "YELLOW_SUBMARINE".encode()
 
-        cipher = aes.encrypt_ebc(plaintext, key, add_padding=False)
+        cipher = aes.encrypt_ecb(plaintext, key, add_padding=False)
 
         assert (
             cipher
@@ -23,7 +23,7 @@ class TestEncryptEbc:
         plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
         key = "YELLOW_SUBMARINE".encode()
 
-        cipher = aes.encrypt_ebc(plaintext, key, add_padding=True)
+        cipher = aes.encrypt_ecb(plaintext, key, add_padding=True)
 
         assert (
             cipher
@@ -62,7 +62,7 @@ def test_encrypt_and_decrypt_ebc_returns_original_bytes():
     plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
     key = "YELLOW_SUBMARINE".encode()
 
-    cipher = aes.encrypt_ebc(plaintext, key, add_padding=False)
+    cipher = aes.encrypt_ecb(plaintext, key, add_padding=False)
     resulting_plaintext = aes.decrypt_ebc(cipher, key, remove_padding=False)
 
     assert plaintext == resulting_plaintext
@@ -238,7 +238,7 @@ class TestFigureOutPrefixLength:
             plaintext_to_encrypt = (
                 unknown_fixed_prefix + user_input + unknown_plaintext
             )
-            ciphertext = aes.encrypt_ebc(plaintext_to_encrypt, key)
+            ciphertext = aes.encrypt_ecb(plaintext_to_encrypt, key)
             return ciphertext
 
         return encrypt_func
