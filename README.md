@@ -12,6 +12,12 @@ Here is a quick summary of what kind of exploits I have worked on in the challen
 AES_ECB_ENCRYPT(attacker_controlled_bytes + unknown_plaintext, unknown_key)
 4. AES CBC bitflipping attacks: Modifying a byte in AES CBC ciphertext block scrambles the corresponding plaintext block but in the next plaintext block only the byte in the same position gets modified)
 
+## History
+
+* Jan 15, 2018: Challenges started
+* Mar 17, 2018: Set 1 finished (duartion: 2 months)
+* Aug 15, 2020: Set 2 finished (duration: 2 years + 5 months)
+
 ## Usage
 
 ```
