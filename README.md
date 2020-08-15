@@ -15,8 +15,8 @@ AES_ECB_ENCRYPT(attacker_controlled_bytes + unknown_plaintext, unknown_key)
 ## History
 
 * Jan 15, 2018: Challenges started
-* Mar 17, 2018: Set 1 finished (duartion: 2 months)
-* Aug 15, 2020: Set 2 finished (duration: 2 years + 5 months)
+* Mar 17, 2018: Set 1 finished (2 months)
+* Aug 15, 2020: Set 2 finished (2 years + 5 months)
 
 ## Usage
 
