@@ -1,18 +1,5 @@
 """
-The CBC padding oracle
-
-b'YELLOW SUBMARIN\x01'
-b'ASDFASDFASDFASDF'
-
-b'ASDFASDFASDFESDF'
-b'QWERTEWRTEWRYTE\x01'
-
-
-b'YELLOW SUBMARI\x02\x02'
-b'ASDFASDFASDFASDF'
-
-b'ASDFASDFASDFESDF'
-b'QWERTEWRTEWRYTE\x01'
+The CBC padding oracle attack
 """
 
 import logging
