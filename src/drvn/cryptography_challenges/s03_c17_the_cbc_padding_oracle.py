@@ -12,12 +12,12 @@ import drvn.cryptography.utils as utils
 
 def run_challenge():
     victim_api = VictimAPI()
-    ciphertext = victim_api.sniff_ciphertext()
+    ciphertext = victim_api.get_ciphertext()
 
     ciphertexts = set()
     logging.info("Sniffing for ciphertexts ...")
     for _ in range(100):
-        ciphertext = victim_api.sniff_ciphertext()
+        ciphertext = victim_api.get_ciphertext()
         ciphertexts.add(bytes(ciphertext))
 
     for ciphertext in ciphertexts:
@@ -79,7 +79,7 @@ class VictimAPI:
             ]
         ]
 
-    def sniff_ciphertext(self):
+    def get_ciphertext(self):
         random_secret = random.choice(self._secrets)
         ciphertext = aes.encrypt_cbc(
             random_secret, self._key, self._iv, add_padding=True
@@ -95,10 +95,3 @@ class VictimAPI:
             ciphertext, self._key, self._iv, remove_padding=False
         )
         return utils.is_valid_pkcs7_padding(plaintext_padded)
-
-    # TODO: remove
-    def decrypt(self, ciphertext):
-        plaintext_padded = aes.decrypt_cbc(
-            ciphertext, self._key, self._iv, remove_padding=False
-        )
-        return plaintext_padded
