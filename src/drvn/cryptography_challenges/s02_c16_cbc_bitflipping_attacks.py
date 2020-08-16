@@ -4,7 +4,6 @@ CBC bitflipping attacks
 comment1=cooking%20MCs;userdata=asdfasdf;comment2=%20like%20a%20pound%20of%20bacon
 """
 
-import base64
 import logging
 
 import drvn.cryptography.aes as aes
@@ -65,11 +64,6 @@ class VictimAPI:
 
         self._key = aes.generate_random_aes_key()
         self._iv = aes.generate_random_aes_key()
-
-        self._key = base64.b64decode(
-            b"opNuv3OoX64xdS0JtVWEUw=="
-        )  # TODO: remove
-        self._iv = base64.b64decode(b"AcMn0ZKTRUOq28+KY9vBtA==")  # TODO: remove
 
     def create_non_admin_request(self, user_input):
         prefix = "comment1=cooking%20MCs;userdata=".encode()

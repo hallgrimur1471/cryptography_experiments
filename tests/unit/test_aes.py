@@ -41,7 +41,7 @@ class TestDecryptEbc:
         )
         key = "YELLOW_SUBMARINE".encode()
 
-        plaintext = aes.decrypt_ebc(cipher, key, remove_padding=False)
+        plaintext = aes.decrypt_ecb(cipher, key, remove_padding=False)
 
         assert plaintext == "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
 
@@ -53,17 +53,17 @@ class TestDecryptEbc:
         )
         key = "YELLOW_SUBMARINE".encode()
 
-        plaintext = aes.decrypt_ebc(cipher, key, remove_padding=True)
+        plaintext = aes.decrypt_ecb(cipher, key, remove_padding=True)
 
         assert plaintext == b"STRAWBERRIES AND CHAMPAGNE :) :)"
 
 
-def test_encrypt_and_decrypt_ebc_returns_original_bytes():
+def test_encrypt_and_decrypt_ecb_returns_original_bytes():
     plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
     key = "YELLOW_SUBMARINE".encode()
 
     cipher = aes.encrypt_ecb(plaintext, key, add_padding=False)
-    resulting_plaintext = aes.decrypt_ebc(cipher, key, remove_padding=False)
+    resulting_plaintext = aes.decrypt_ecb(cipher, key, remove_padding=False)
 
     assert plaintext == resulting_plaintext
 

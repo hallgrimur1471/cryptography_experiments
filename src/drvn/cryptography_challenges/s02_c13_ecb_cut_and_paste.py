@@ -92,7 +92,7 @@ class VictimAPI:
         """
         Add profile to system from ciphertext
         """
-        profile_plaintext = aes.decrypt_ebc(profile_ciphertext, self._key)
+        profile_plaintext = aes.decrypt_ecb(profile_ciphertext, self._key)
         profile_serialised = profile_plaintext.decode()
         profile = deserialise_cookie(profile_serialised)
 

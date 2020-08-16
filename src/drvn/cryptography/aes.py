@@ -20,7 +20,7 @@ def encrypt_ecb(plaintext, key, add_padding=True):
     return cipher
 
 
-def decrypt_ebc(
+def decrypt_ecb(
     cipher, key, remove_padding=True
 ):  # TODO: rename cipher to ciphertext
     cipher_obj = Cipher(
@@ -70,7 +70,7 @@ def decrypt_cbc(ciphertext, key, iv, block_size=128, remove_padding=True):
     v = iv
     while i < len(ciphertext):
         ciphertext_block = ciphertext[i:j]
-        decrypted_block_xor = decrypt_ebc(
+        decrypted_block_xor = decrypt_ecb(
             ciphertext_block, key, remove_padding=False
         )
         decrypted_block = utils.fixed_xor(v, decrypted_block_xor)
