@@ -100,6 +100,31 @@ class TestRemovePkcs7Padding:
             utils.remove_pkcs7_padding(plaintext_padded)
 
 
+class TestIsValidPadding:
+    def test_normal(self):
+        assert utils.is_valid_pkcs7_padding(b"YELLOW SUBMARIN\x01")
+        assert utils.is_valid_pkcs7_padding(b"YELLOW SUBMARI\x02\x02")
+        assert utils.is_valid_pkcs7_padding(b"YELLOW SUBMAR\x03\x03\x03")
+        assert utils.is_valid_pkcs7_padding(b"YELLOW SUBMA\x04\x04\x04\x04")
+        assert utils.is_valid_pkcs7_padding(b"YELLOW SUBM\x05\x05\x05\x05\x05")
+
+    def test_refuses_no_padding(self):
+        assert not utils.is_valid_pkcs7_padding(b"YELLOW SUBMARINE")
+
+    def test_accepts_full_block_padding(self):
+        assert utils.is_valid_pkcs7_padding(
+            b"\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10\x10"
+        )
+
+    def test_refuses_too_long_padding(self):
+        assert not utils.is_valid_pkcs7_padding(
+            b"\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11\x11"
+        )
+
+    def test_zero_byte_is_not_valid_padding(self):
+        assert not utils.is_valid_pkcs7_padding(b"YELLOW SUBMARIN\x00")
+
+
 class TestMaxNumIdenticalContinuousCiphertextBlocks:
     def test_normal(self):
         ciphertext = (

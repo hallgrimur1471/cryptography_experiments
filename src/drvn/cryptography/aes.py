@@ -201,6 +201,7 @@ def decrypt_ecb_encryption_with_prependable_plaintext_1(encrypt_func):
     return plaintext
 
 
+# pylint: disable=too-many-locals
 def decrypt_ecb_encryption_with_injectable_plaintext(encrypt_func):
     """
     Determine unknown_plaintext of a cipher that has an encryption API like this:
@@ -358,3 +359,55 @@ def determine_cipher_block_size_by_prependable_plaintext(encrypt_func):
             return cipher_block_size
 
         i += 1
+
+
+# pylint: disable=invalid-name
+def decrypt_cbc_ciphertext_using_padding_oracle(
+    ciphertext, padding_oracle, cipher_block_size=128, remove_padding=True
+):
+    B = cipher_block_size // 8
+    c = bytearray(ciphertext)
+    L = len(c)
+    dec = bytearray(b"\x00" * L)
+    plaintext = bytearray(b"\x00" * L)
+
+    for block_num in reversed(range(0, (L // B) - 1)):
+        block_start = block_num * B
+        block_end = block_start + B
+
+        for i in reversed(range(block_start, block_end)):
+            pad_byte = (block_end) - i
+
+            # Prepare forged padding
+            for k in range(i + 1, block_end):
+                c[k] = pad_byte ^ dec[k + B]
+
+            # Figure out plaintext[i+B] by finding last byte
+            # to complete the forged padding
+            correct_byte = c[i]
+            for byte_ in (
+                list(range(0, correct_byte))
+                + list(range(correct_byte + 1, 256))
+                + [correct_byte]
+            ):
+                c[i] = byte_
+                if padding_oracle(c):
+                    if byte_ == correct_byte:
+                        logging.warning(
+                            f"c[i] not necessary {bytes([pad_byte])}"
+                        )
+                    dec[i + B] = pad_byte ^ c[i]
+                    plaintext[i + B] = dec[i + B] ^ correct_byte
+                    break
+
+        c = bytearray(ciphertext)
+        c = c[:block_end]
+
+    if remove_padding:
+        plaintext = utils.remove_pkcs7_padding(plaintext)
+
+    # Mark first plaintexttext block as unkown
+    for i in range(0, B):
+        plaintext[i] = ord("?")
+
+    return bytes(plaintext)

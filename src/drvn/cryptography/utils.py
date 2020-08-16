@@ -181,8 +181,14 @@ def remove_pkcs7_padding(bytes_):
     return bytes_[0 : len(bytes_) - num_pads]
 
 
-def is_valid_pkcs7_padding(bytes_):
+def is_valid_pkcs7_padding(bytes_, cipher_block_size=128):
+    block_size_bytes = cipher_block_size // 8
+
     num_pads = bytes_[-1]
+
+    if num_pads == 0 or num_pads > block_size_bytes:
+        return False
+
     start_pad_i = len(bytes_) - num_pads
     for byte in bytes_[start_pad_i:]:
         if byte != num_pads:
