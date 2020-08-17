@@ -162,6 +162,48 @@ def test_encrypt_and_decrypt_cbc_returns_original_bytes():
     assert plaintext == resulting_plaintext
 
 
+class TestEncryptCtr:
+    def test_normal(self):
+        plaintext = b"Implement CTR, the stream cipher mode"
+        key = b"MELLOW SUBMARINE"
+        nonce = 1234
+
+        ciphertext = aes.encrypt_ctr(plaintext, key, nonce)
+
+        print(ciphertext)
+        assert (
+            base64.b64encode(ciphertext)
+            == b"+qszBx4Zm1W0pe/tsjA414OoMQ/pIt/2BtnamAY57ZYN6DU6OA=="
+        )
+
+
+class TestDecryptCtr:
+    def test_normal(self):
+        ciphertext = base64.b64decode(
+            "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/"
+            + "2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ=="
+        )
+        key = b"YELLOW SUBMARINE"
+        nonce = 0
+
+        plaintext = aes.decrypt_ctr(ciphertext, key, nonce)
+
+        assert (
+            plaintext == b"Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby "
+        )
+
+
+def test_encrypt_and_decrypt_ctr_returns_original_bytes():
+    plaintext = "STRAWBERRIES AND CHAMPAGNE :) :)".encode()
+    key = "YELLOW_SUBMARINE".encode()
+    nonce = 0
+
+    ciphertext = aes.encrypt_ctr(plaintext, key, nonce)
+    resulting_plaintext = aes.decrypt_ctr(ciphertext, key, nonce)
+
+    assert plaintext == resulting_plaintext
+
+
 class TestDetectMode:
     def test_detects_ecb(self):
         ciphertext = bytes.fromhex(

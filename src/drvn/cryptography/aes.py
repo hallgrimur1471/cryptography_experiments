@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 import random
 import logging
 
@@ -86,6 +87,54 @@ def decrypt_cbc(ciphertext, key, iv, block_size=128, remove_padding=True):
     return bytes(plaintext)
 
 
+class Keystream:
+    def __init__(self, key, nonce):
+        self.key = key
+        self.nonce = nonce
+        self.counter = 0
+
+    def get_block(self):
+        block_plaintext = self._get_block_plaintext()
+        block_ciphertext = encrypt_ecb(block_plaintext, self.key)
+        self.counter += 1
+        return block_ciphertext
+
+    def _get_block_plaintext(self):
+        nonce_bytes = self.nonce.to_bytes(8, byteorder="little")
+        counter_bytes = self.counter.to_bytes(8, byteorder="little")
+        block_plaintext = nonce_bytes + counter_bytes
+        return block_plaintext
+
+
+def encrypt_ctr(plaintext, key, nonce):
+    B = 16
+    i = 0
+    j = B
+    keystream = Keystream(key, nonce)
+    # TODO: Make generator to iterate over ciphertext blocks
+    ciphertext = bytearray()
+    while i <= len(ciphertext):
+        keystream_block = keystream.get_block()
+        ciphertext += utils.fixed_xor(keystream_block, plaintext[i:j])
+        i += B
+        j += B
+    return bytes(ciphertext)
+
+
+def decrypt_ctr(ciphertext, key, nonce):
+    B = 16
+    i = 0
+    j = B
+    keystream = Keystream(key, nonce)
+    plaintext = bytearray()
+    while i <= len(ciphertext):
+        keystream_block = keystream.get_block()
+        plaintext += utils.fixed_xor(keystream_block, ciphertext[i:j])
+        i += B
+        j += B
+    return bytes(plaintext)
+
+
 def detect_mode(ciphertext, block_size=128) -> str:
     """
     Looks for recurring {block_size} bits in the ciphertext.
@@ -118,6 +167,7 @@ def generate_random_aes_key():
     return utils.generate_random_bytes(16)
 
 
+# NOTE: move to challenge module?
 def encryption_oracle(plaintext):
     prefix_size = random.randint(5, 10)
     prefix = utils.generate_random_bytes(prefix_size)
@@ -361,7 +411,6 @@ def determine_cipher_block_size_by_prependable_plaintext(encrypt_func):
         i += 1
 
 
-# pylint: disable=invalid-name
 def decrypt_cbc_ciphertext_using_padding_oracle(
     ciphertext, padding_oracle, cipher_block_size=128, remove_padding=True
 ):
