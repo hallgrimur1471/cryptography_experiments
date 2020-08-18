@@ -62,7 +62,7 @@ class TestAddPkcs7Padding:
 
         assert padded_plaintext == b"YELLOW SUBMARINE\x04\x04\x04\x04"
 
-    def test_bytes_are_modulo_zero_to_block_size(self):
+    def test_plaintext_bytes_are_modulo_zero_to_block_size(self):
         plaintext = "YELLOW SUBMARINE".encode()
 
         padded_plaintext = utils.add_pkcs7_padding(plaintext, block_size=8)
