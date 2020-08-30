@@ -70,10 +70,10 @@ def decrypt(cipher):
     return utils.DecryptionResult(data, key)
 
 
-def single_byte_decryption(cipher, num_results=1):
+def single_byte_decryption(ciphertext, num_results=1):
     """
     Args:
-        cipher (bytes[array]): cipher to decrypt
+        ciphertext (bytes[array]): ciphertext to decrypt
         num_results (int): number of results to return
     Returns:
         list of utils.DecryptionResult, the first element is the most likely data, key
@@ -85,7 +85,7 @@ def single_byte_decryption(cipher, num_results=1):
     results = []
     for key in key_candidates:
         data = bytearray()
-        for byte in cipher:
+        for byte in ciphertext:
             data.append(byte ^ key)
         result = utils.DecryptionResult(data, key)
         results.append(result)

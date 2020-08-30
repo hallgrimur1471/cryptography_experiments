@@ -1,11 +1,13 @@
 # pylint: disable=invalid-name
 import random
 import logging
+import base64
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
 import drvn.cryptography.utils as utils
+import drvn.cryptography.xor as xor
 
 
 def encrypt_ecb(plaintext, key, add_padding=True):
@@ -165,6 +167,10 @@ def detect_mode(ciphertext, block_size=128) -> str:
 
 def generate_random_aes_key():
     return utils.generate_random_bytes(16)
+
+
+def get_example_aes_key():
+    return base64.b64decode("KP5nJ6bzhgdoQkX7OW79qg==")
 
 
 # NOTE: move to challenge module?
@@ -460,3 +466,22 @@ def decrypt_cbc_ciphertext_using_padding_oracle(
         plaintext[i] = ord("?")
 
     return bytes(plaintext)
+
+
+def decrypt_ctr_ciphertexts_with_fixed_nonce(ciphertexts):
+    keystream = bytearray()
+    max_length = max([len(t) for t in ciphertexts])
+    for i in range(max_length):
+        vertical_block = []
+        for ciphertext in ciphertexts:
+            if i < len(ciphertext):
+                vertical_block.append(ciphertext[i])
+
+        keystream_byte = xor.single_byte_decryption(vertical_block)[0].key
+        keystream.append(keystream_byte)
+
+    plaintexts = [
+        xor.encrypt(ciphertext, keystream) for ciphertext in ciphertexts
+    ]
+
+    return plaintexts
