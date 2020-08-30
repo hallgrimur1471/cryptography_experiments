@@ -1,3 +1,6 @@
+import time
+
+
 class MT19937:
     def __init__(self, bits=32):
         if bits == 32:
@@ -93,3 +96,29 @@ class MT19937:
                 xA = xA ^ a
             mt[i] = mt[(i + m) % n] ^ xA
         self.index = 0
+
+
+def crack_unix_timestamp_seed(
+    outputs, approximate_time=None, timeout=10, mt19937_bits=32
+):
+    current_unix_timestamp = int(time.time())
+    start_time = current_unix_timestamp
+    if approximate_time == None:
+        approximate_time = current_unix_timestamp
+
+    mt = MT19937(bits=mt19937_bits)
+
+    i = 0
+    mt.seed(approximate_time + i)
+    resulting_outputs = [mt.get_number() for _ in range(len(outputs))]
+    while True:
+        if time.time() - start_time >= timeout:
+            raise RuntimeError("Cracking unix timestamp seed timed out")
+
+        for cracked_seed in [approximate_time + i, approximate_time - i]:
+            mt.seed(cracked_seed)
+            resulting_outputs = [mt.get_number() for _ in range(len(outputs))]
+            if resulting_outputs == outputs:
+                return cracked_seed
+
+        i += 1
