@@ -34,7 +34,6 @@ class VictimAPI:
     def __init__(self):
         self._nonce = 0
         self._key = aes.generate_random_aes_key()
-        self._key = aes.get_example_aes_key()  # TODO: remove
 
         self._ciphertexts = None
 
