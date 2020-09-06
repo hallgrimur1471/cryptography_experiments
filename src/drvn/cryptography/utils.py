@@ -3,10 +3,11 @@ Various utility functions
 """
 
 import logging
-
 import subprocess
 import base64
 import random
+import operator
+import time
 
 import drvn.cryptography._resources as resources
 
@@ -286,6 +287,104 @@ def get_block(ciphertext, i, block_size=128):
     p = i * block_size_bytes
     q = p + block_size_bytes
     return ciphertext[p:q]
+
+
+def find_value_with_results(
+    f,
+    results,
+    init_value=0,
+    iterate_value=lambda v: operator.add(v, 1),
+    timeout=None,
+):
+    """
+    Args:
+        f (func):
+            Function that takes one argument (value)
+        results:
+            f(value) == results
+    Returns:
+        value, where f(value) == results
+    """
+    v = init_value
+    start_time = time.time()
+    while f(v) != results:
+        print(results, f(v), v)
+        v = iterate_value(v)
+
+        if timeout and time.time() - start_time >= timeout:
+            raise RuntimeError(f"Search for 'value' for {f} timed out at v={v}")
+    print(results, f(v), v)
+    return v
+
+
+def reverse_operations_1(rshift, magic, results, bits=32):
+    """
+    Returns x where:
+        results == x ^ ((x >> rshift) & magic)
+    """
+    (y, s, m) = (results, rshift, magic)
+
+    x = 0
+    # x = x31 x30 .. x1 x0
+    for i in reversed(range(0, bits)):
+        y_i = get_bit(i, y)
+
+        # calculate bit i in x
+        # (x_i)
+        j = i + s
+        if j < bits:
+            x_j = get_bit(j, x)
+            m_i = get_bit(i, m)
+
+            x_i = y_i ^ (x_j & m_i)
+
+        else:
+            x_i = y_i
+
+        x = set_bit(i, x_i, x)
+
+    return x
+
+
+def reverse_operations_2(lshift, magic, results, bits=32):
+    """
+    Returns x where:
+        results == x ^ ((x << lshift) & magic)
+    """
+    (y, s, m) = (results, lshift, magic)
+
+    x = 0
+    # x = x31 x30 .. x1 x0
+    for i in range(0, bits):
+        y_i = get_bit(i, y)
+
+        # calculate bit i in x
+        # (x_i)
+        j = i - s
+        if j >= 0:
+            x_j = get_bit(j, x)
+            m_i = get_bit(i, m)
+
+            x_i = y_i ^ (x_j & m_i)
+
+        else:
+            x_i = y_i
+
+        x = set_bit(i, x_i, x)
+
+    return x
+
+
+def get_bit(i, x):
+    return (x >> i) & 1
+
+
+def set_bit(i, x_i, x):
+    mask = 1 << i
+    x &= ~mask
+    if x_i:
+        x |= mask
+    return x
 
 
 def try_cmd(*args, **kwargs):

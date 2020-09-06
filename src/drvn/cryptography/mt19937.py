@@ -1,5 +1,7 @@
 import time
 
+import drvn.cryptography.utils as utils
+
 
 class MT19937:
     def __init__(self, bits=32):
@@ -69,8 +71,9 @@ class MT19937:
         y ^= y >> l
 
         self.index += 1
+        num = y & ((2 ** w) - 1)
 
-        return y & ((2 ** w) - 1)
+        return num
 
     def seed(self, seed: int):
         (w, n, f, mt) = (self.w, self.n, self.f, self.mt)
@@ -98,12 +101,89 @@ class MT19937:
         self.index = 0
 
 
+def clone_rng(nums, bits=32):
+    if bits != 32:
+        raise ValueError("This function only supports cloning a 32 bit MT19937")
+
+    if len(nums) < 624:
+        raise ValueError("'nums' must contain at least 625 numbers")
+
+    clone = _clone_rng_from_624_numbers(nums[0:624])
+
+    # The MT19937 has now successfully been cloned but it needs to be tapped
+    # len(nums) - 624 times to arrive to the same number as the original RNG
+    i = 624
+    while i < len(nums):
+        clone.get_number()
+        i += 1
+
+    return clone
+
+
+# pylint: disable=too-many-locals
+def _clone_rng_from_624_numbers(nums):
+    """
+    Args:
+        nums ([int]):
+            list of 624 integers, the required amount to deduce MT19937's state
+    """
+    mt = MT19937()
+    n, u, d, s, b, t, c, l = (
+        624,
+        11,
+        0xFFFFFFFF,
+        7,
+        0x9D2C5680,
+        15,
+        0xEFC60000,
+        18,
+    )
+    for i in range(0, 624):
+        num = nums[i]
+
+        # w = 32
+        # num == y1 & ((2 ** w) - 1)
+        # => last w bits of y1 are same as the bits of num
+        #
+        # we do not need to worry about the higer order bits than w
+        # so we can use num as y1
+        y1 = num
+
+        # Now these MT19937 calculations will be reversed:
+        # y = mt[self.index]
+        # y ^= (y >> u) & d
+        # y ^= (y << s) & b
+        # y ^= (y << t) & c
+        # y ^= y >> l
+
+        # y1 = y2 ^ (y2 >> l)
+        # y1 = y2 ^ ((y2 >> l) & 0xFFFFFFFF)
+        y2 = utils.reverse_operations_1(l, 0xFFFFFFFF, y1)
+
+        # y2 = y3 ^ ((y3 << t) & c)
+        y3 = utils.reverse_operations_2(t, c, y2)
+
+        # y3 = y4 ^ ((y4 << s) & b)
+        y4 = utils.reverse_operations_2(s, b, y3)
+
+        # y4 = y5 ^ ((y5 >> u) & d)
+        y5 = utils.reverse_operations_1(u, d, y4)
+
+        reversed_mt_value = y5
+
+        mt.mt[i] = reversed_mt_value
+
+    mt.index = n
+
+    return mt
+
+
 def crack_unix_timestamp_seed(
     outputs, approximate_time=None, timeout=10, mt19937_bits=32
 ):
     current_unix_timestamp = int(time.time())
     start_time = current_unix_timestamp
-    if approximate_time == None:
+    if approximate_time is None:
         approximate_time = current_unix_timestamp
 
     mt = MT19937(bits=mt19937_bits)

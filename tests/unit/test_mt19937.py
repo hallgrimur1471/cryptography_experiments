@@ -1,4 +1,4 @@
-# pylint: disable=no-self-use, protected-access
+# pylint: disable=no-self-use, protected-access, invalid-name
 
 import pytest
 
@@ -46,3 +46,58 @@ class TestMT19937:
             9131545258602306973,
             14790547962871044865,
         ]
+
+
+class TestCloneRng:
+    def test_normal(self):
+        mt = mt19937.MT19937()
+        N = 624
+        nums = [mt.get_number() for _ in range(N)]
+        bits = 32
+
+        mt_cloned = mt19937.clone_rng(nums, bits=bits)
+
+        for _ in range(10):
+            assert mt.get_number() == mt_cloned.get_number()
+
+    def test_already_tapped_unknown_many_times(self):
+        mt = mt19937.MT19937()
+        for _ in range(123):  # tap arbitrary number of times
+            mt.get_number()
+        N = 625
+        nums = [mt.get_number() for _ in range(N)]
+        bits = 32
+
+        mt_cloned = mt19937.clone_rng(nums, bits=bits)
+
+        for _ in range(10):
+            assert mt.get_number() == mt_cloned.get_number()
+
+    def test_refuses_64_bit(self):
+        mt = mt19937.MT19937()
+        N = 1248
+        nums = [mt.get_number() for _ in range(N)]
+        bits = 64
+
+        with pytest.raises(ValueError):
+            mt19937.clone_rng(nums, bits=bits)
+
+    def test_refuses_less_than_624_nums(self):
+        mt = mt19937.MT19937()
+        N = 623
+        nums = [mt.get_number() for _ in range(N)]
+        bits = 32
+
+        with pytest.raises(ValueError):
+            mt19937.clone_rng(nums, bits=bits)
+
+    def test_accepts_624_nums(self):
+        mt = mt19937.MT19937()
+        N = 624
+        nums = [mt.get_number() for _ in range(N)]
+        bits = 32
+
+        # assert no exception raised
+        mt19937.clone_rng(nums, bits=bits)
+
+    # test failed to clone RNG

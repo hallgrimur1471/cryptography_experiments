@@ -153,3 +153,67 @@ class TestMaxNumIdenticalContinuousCiphertextBlocks:
         n = utils.max_num_identical_continuous_ciphertext_blocks(ciphertext)
 
         assert n == 3
+
+
+class TestFindValueWithResults:
+    def test_normal(self):
+        v = 42
+        f = lambda v: v ** 2 + v
+        results = 1806
+
+        v_deduced = utils.find_value_with_results(f, results)
+
+        assert v_deduced == v
+
+
+class TestReverseOperations1:
+    def test_normal(self):
+        x, rshift, magic, results = (123456, 5, 0xCAFEBABE, 125010)
+
+        x_deduced = utils.reverse_operations_1(rshift, magic, results)
+
+        assert x_deduced == x
+
+
+class TestReverseOperations2:
+    def test_normal(self):
+        x, lshift, magic, results = (7890, 4, 0xBABECAFE, 55026)
+
+        x_deduced = utils.reverse_operations_2(lshift, magic, results)
+
+        assert x_deduced == x
+
+    def test_normal_for_debug(self):
+        x, lshift, magic, results = (
+            int("1101", 2),
+            int("0001", 2),
+            int("1010", 2),
+            int("0111", 2),
+        )
+
+        x_deduced = utils.reverse_operations_2(lshift, magic, results)
+
+        assert x_deduced == x
+
+
+class TestGetBit:
+    def test_normal(self):
+        x = 6
+
+        assert utils.get_bit(0, x) == 0
+        assert utils.get_bit(1, x) == 1
+        assert utils.get_bit(2, x) == 1
+        assert utils.get_bit(3, x) == 0
+        assert utils.get_bit(4, x) == 0
+
+
+class TestSetBit:
+    def test_normal(self):
+        x = int("101001", 2)
+
+        assert utils.set_bit(2, 0, x) == int("101001", 2)
+        assert utils.set_bit(2, 1, x) == int("101101", 2)
+
+        x = int("111001", 2)
+        assert utils.set_bit(4, 0, x) == int("101001", 2)
+        assert utils.set_bit(4, 1, x) == int("111001", 2)
