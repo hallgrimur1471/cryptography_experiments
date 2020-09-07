@@ -1,4 +1,4 @@
-# Breaking Cryptography
+# Cryptography Exploits
 
 This repository currently is being developed while I work on the [cryptopals crypto challenges](http://cryptopals.com) which are about exploiting cryptographic systems.
 
