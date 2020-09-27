@@ -101,3 +101,35 @@ class TestCloneRng:
         mt19937.clone_rng(nums, bits=bits)
 
     # test failed to clone RNG
+
+
+class TestStreamCipherEncrypt:
+    def test_normal(self):
+        plaintext = "oracle".encode()
+        key = 1200
+
+        ciphertext = mt19937.stream_cipher_encrypt(plaintext, key)
+
+        assert ciphertext == b"\x99Y\xfd\xfc\xf2\x95"
+
+
+class TestStreamCipherDecrypt:
+    def test_normal(self):
+        ciphertext = b"\xc0q\xa2=Y\xdd"
+        key = 1201
+
+        plaintext = mt19937.stream_cipher_decrypt(ciphertext, key)
+
+        assert plaintext == b"oracle"
+
+
+def test_encrypt_and_decrypt_ecb_returns_original_bytes():
+    plaintext = (
+        "You can create a trivial stream cipher out of any PRNG".encode()
+    )
+    key = 2845
+
+    ciphertext = mt19937.stream_cipher_encrypt(plaintext, key)
+    resulting_plaintext = mt19937.stream_cipher_decrypt(ciphertext, key)
+
+    assert plaintext == resulting_plaintext

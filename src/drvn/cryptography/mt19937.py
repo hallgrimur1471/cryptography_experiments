@@ -178,6 +178,36 @@ def _clone_rng_from_624_numbers(nums):
     return mt
 
 
+class Keystream:
+    def __init__(self, seed=None):
+        self.mt = MT19937()
+        if seed:
+            self.mt.seed(seed)
+
+        self.bytes = bytearray()
+
+    def get_byte(self):
+        if not self.bytes:
+            num = self.mt.get_number()
+            bytes_ = num.to_bytes(4, byteorder="little")
+            self.bytes = bytearray(bytes_)
+
+        byte = self.bytes.pop()
+        return byte
+
+
+def stream_cipher_encrypt(plaintext, key):
+    keystream = Keystream(key)
+    ciphertext = bytearray()
+    for byte in plaintext:
+        ciphertext.append(byte ^ keystream.get_byte())
+    return bytes(ciphertext)
+
+
+def stream_cipher_decrypt(ciphertext, key):
+    return stream_cipher_encrypt(ciphertext, key)
+
+
 def crack_unix_timestamp_seed(
     outputs, approximate_time=None, timeout=10, mt19937_bits=32
 ):
