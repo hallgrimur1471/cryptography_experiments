@@ -26,8 +26,6 @@ class VictimAPI:
     def __init__(self):
         self._key = aes.generate_random_aes_key()
         self._nonce = random.randint(0, 2 ** 64 - 1)
-        self._key = b"\xb6\xcaEO-\xd2\x913&\x8dC%\x05(]\x0c"  # TODO: remove
-        self._nonce = 16322039851761152336  # TODO: remove
 
     def edit(self, ciphertext, offset, newtext):
         # This method could be optimized a whole lot ...
