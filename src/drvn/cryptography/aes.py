@@ -485,3 +485,31 @@ def decrypt_ctr_ciphertexts_with_fixed_nonce(ciphertexts):
     ]
 
     return plaintexts
+
+
+def decycrypt_editable_ctr_encryption(ciphertext, edit):
+    """
+    Args:
+        ciphertext (bytes):
+            AES CTR encrypted with unknown key and nonce.
+        edit (function):
+            Function that allows you to "seek" into the ciphertext, decrypt,
+            and re-encrypt with different plaintext. It's parameters should be
+            like this:
+                edit(ciphertext: bytes, offset: int, newtext: bytes)
+            And it should return the new ciphertext, encrypted with the same
+            key and nonce as the original plaintext.
+    Returns:
+        plaintext (bytes). Recovered plaintext from ciphertext.
+    """
+    plaintext = bytearray()
+    for i in range(len(ciphertext)):
+        for b in range(0, 256):
+            byte = b.to_bytes(1, byteorder="little")
+            new_ciphertext = edit(ciphertext, i, byte)
+
+            if new_ciphertext == ciphertext:
+                plaintext.append(b)
+                print(plaintext)
+                break
+    return bytes(plaintext)
