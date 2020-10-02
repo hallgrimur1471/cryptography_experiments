@@ -1,7 +1,5 @@
 """
-CBC bitflipping attacks
-
-comment1=cooking%20MCs;userdata=asdfasdf;comment2=%20like%20a%20pound%20of%20bacon
+CTR bitflipping
 """
 
 import logging
@@ -13,18 +11,10 @@ import drvn.cryptography.utils as utils
 def run_challenge():
     victim_api = VictimAPI()
 
-    request = victim_api.create_non_admin_request(
-        b"BBBBBBBBBBBBBBBB" + b"BBBBB?admin?true"
-    )
+    request = victim_api.create_non_admin_request(b"BBBBB?admin?true")
     print("request ciphertext:")
     utils.print_ciphertext_blocks(request)
 
-    # modifying changing bytes in position (32 + 5) and (32 + 11)
-    # in ciphertext will scramble block at 32 but only modify bytes
-    # (48 + 5) and (48 + 11) in plaintext block at 48
-    #
-    # if we can change (48 + 5) to ';' and (48 + 11) to '=' then we have
-    # forged an ;admin=true; tuple in the request
     p1 = 32 + 5
     p2 = 32 + 11
     admin_request_forged = False
@@ -50,7 +40,8 @@ def run_challenge():
         logging.info(
             "Admin request successfully forged after "
             + f"{victim_api.num_is_admin_requests} calls to "
-            + "victim_api.is_admin_request(request)"
+            + "victim_api.is_admin_request(request).\n"
+            + f"request:\n{request}"
         )
     else:
         logging.info("Failed to forge an admin request")
@@ -62,7 +53,7 @@ class VictimAPI:
         self.num_is_admin_requests = 0
 
         self._key = aes.generate_random_aes_key()
-        self._iv = aes.generate_random_aes_key()
+        self._nonce = aes.generate_random_nonce()
 
     def create_non_admin_request(self, user_input):
         prefix = "comment1=cooking%20MCs;userdata=".encode()
@@ -74,8 +65,8 @@ class VictimAPI:
         print("request_plaintext:")
         utils.print_plaintext_blocks(request_plaintext)
 
-        request_ciphertext = aes.encrypt_cbc(
-            request_plaintext, self._key, self._iv
+        request_ciphertext = aes.encrypt_ctr(
+            request_plaintext, self._key, self._nonce
         )
         return request_ciphertext
 
@@ -85,7 +76,7 @@ class VictimAPI:
         return (b"admin" in request_data) and request_data[b"admin"] == b"true"
 
     def _decrypt_request(self, request_ciphertext):
-        plaintext = aes.decrypt_cbc(request_ciphertext, self._key, self._iv)
+        plaintext = aes.decrypt_ctr(request_ciphertext, self._key, self._nonce)
         data = self._parse_request(plaintext)
         return data
 

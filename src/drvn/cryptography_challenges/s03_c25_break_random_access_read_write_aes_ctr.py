@@ -14,7 +14,10 @@ def run_challenge():
     api = VictimAPI()
 
     ciphertext = api.get_original_ciphertext()
-    logging.info("Got ciphertext from victim:\n{}...".format(ciphertext[0:100]))
+    ciphertext = ciphertext[
+        0:20
+    ]  # speed it up a bit (should maybe optimize later)
+    logging.info("Got ciphertext from victim:\n{}...".format(ciphertext[0:10]))
 
     logging.info("Decrypting ciphertext ...")
     plaintext = aes.decycrypt_editable_ctr_encryption(ciphertext, api.edit)

@@ -169,6 +169,10 @@ def generate_random_aes_key():
     return utils.generate_random_bytes(16)
 
 
+def generate_random_nonce():
+    return random.randint(0, 2 ** 64 - 1)
+
+
 def get_example_aes_key():
     return base64.b64decode("KP5nJ6bzhgdoQkX7OW79qg==")
 

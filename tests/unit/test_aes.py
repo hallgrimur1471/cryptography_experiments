@@ -302,3 +302,16 @@ class TestGenerateRandomAesKey:
         key_2 = aes.generate_random_aes_key()
 
         assert key_1 != key_2
+
+
+class TestGenerateRandomNonce:
+    def test_returns_int(self):
+        key = aes.generate_random_nonce()
+
+        assert isinstance(key, int)
+
+    def test_generates_different_nonces(self):
+        nonce_1 = aes.generate_random_nonce()
+        nonce_2 = aes.generate_random_nonce()
+
+        assert nonce_1 != nonce_2
