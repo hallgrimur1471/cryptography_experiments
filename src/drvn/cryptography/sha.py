@@ -194,7 +194,8 @@ def sha1(data):
 ###############################################################################
 The code below is NOT a part of
 https://github.com/ajalt/python-sha1/blob/master/sha1.py
-so the MIT licence above does not apply the code here below
+so the MIT licence above does not apply to the code below unless otherwise
+stated
 """
 
 
@@ -253,6 +254,7 @@ def sha1_length_extension_attack(
 def calculate_glue_padding(msg_len):
     """
     The code in this function is based on the MIT licenced code above
+    and is therefore licenced
     """
     padding = b"\x80"
     padding += b"\x00" * ((56 - (msg_len + 1) % 64) % 64)
