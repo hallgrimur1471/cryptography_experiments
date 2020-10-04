@@ -29,6 +29,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import logging
 import struct
 import io
 
@@ -219,8 +220,10 @@ def sha1_length_extension_attack(
     auth_mac = authenticated_data_mac
 
     secret_key_length = 0  # This needs to be guessed
-    secret_key_length = len(b"very secret key")  # TODO: remove
     while True:
+        logging.debug(
+            f"Trying length extension attack with {secret_key_length=} ..."
+        )
         message_length = secret_key_length + len(authenticated_data)
         glue_padding = calculate_glue_padding(message_length)
 
@@ -247,8 +250,6 @@ def sha1_length_extension_attack(
             return forged_data, forged_mac
 
         secret_key_length += 1
-
-        raise RuntimeError("Boom!")
 
 
 def calculate_glue_padding(msg_len):
