@@ -1,4 +1,4 @@
-# pylint: disable=pointless-string-statement, wrong-import-position
+# pylint: disable=pointless-string-statement, wrong-import-position,no-self-use
 """
 The code below is a modified version of this code:
 https://github.com/ajalt/python-sha1/blob/master/sha1.py
@@ -29,6 +29,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import logging
 import struct
 import io
 
@@ -70,7 +71,7 @@ class Sha1Hash:
 
         # Read the rest of the data, 64 bytes at a time
         while len(chunk) == 64:
-            self._h = _process_chunk(chunk, *self._h)
+            self._h = self._process_chunk(chunk, *self._h)
             self._message_byte_length += 64
             chunk = arg.read(64)
 
@@ -104,10 +105,71 @@ class Sha1Hash:
 
         # Process the final chunk
         # At this point, the length of the message is either 64 or 128 bytes.
-        h = _process_chunk(message[:64], *self._h)
+        h = self._process_chunk(message[:64], *self._h)
         if len(message) == 64:
+            print(f"{message=}")
             return h
-        return _process_chunk(message[64:], *h)
+        return self._process_chunk(message[64:], *h)
+
+    def _left_rotate(self, n, b):
+        """Left rotate a 32-bit integer n by b bits."""
+        return ((n << b) | (n >> (32 - b))) & 0xFFFFFFFF
+
+    # pylint:disable=too-many-locals
+    def _process_chunk(self, chunk, h0, h1, h2, h3, h4):
+        """Process a chunk of data and return the new digest variables."""
+        assert len(chunk) == 64
+
+        w = [0] * 80
+
+        # Break chunk into sixteen 4-byte big-endian words w[i]
+        for i in range(16):
+            w[i] = struct.unpack(b">I", chunk[i * 4 : i * 4 + 4])[0]
+
+        # Extend the sixteen 4-byte words into eighty 4-byte words
+        for i in range(16, 80):
+            w[i] = self._left_rotate(
+                w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1
+            )
+
+        # Initialize hash value for this chunk
+        a = h0
+        b = h1
+        c = h2
+        d = h3
+        e = h4
+
+        for i in range(80):
+            if 0 <= i <= 19:
+                # Use alternative 1 for f from FIPS PB 180-1 to avoid bitwise not
+                f = d ^ (b & (c ^ d))
+                k = 0x5A827999
+            elif 20 <= i <= 39:
+                f = b ^ c ^ d
+                k = 0x6ED9EBA1
+            elif 40 <= i <= 59:
+                f = (b & c) | (b & d) | (c & d)
+                k = 0x8F1BBCDC
+            elif 60 <= i <= 79:
+                f = b ^ c ^ d
+                k = 0xCA62C1D6
+
+            a, b, c, d, e = (
+                (self._left_rotate(a, 5) + f + e + k + w[i]) & 0xFFFFFFFF,
+                a,
+                self._left_rotate(b, 30),
+                c,
+                d,
+            )
+
+        # Add this chunk's hash to result so far
+        h0 = (h0 + a) & 0xFFFFFFFF
+        h1 = (h1 + b) & 0xFFFFFFFF
+        h2 = (h2 + c) & 0xFFFFFFFF
+        h3 = (h3 + d) & 0xFFFFFFFF
+        h4 = (h4 + e) & 0xFFFFFFFF
+
+        return h0, h1, h2, h3, h4
 
 
 def sha1(data):
@@ -121,60 +183,71 @@ def sha1(data):
     return Sha1Hash().update(data).digest()
 
 
-def _left_rotate(n, b):
-    """Left rotate a 32-bit integer n by b bits."""
-    return ((n << b) | (n >> (32 - b))) & 0xFFFFFFFF
+"""
+###############################################################################
+##################################### NOTE ####################################
+###############################################################################
+The code below is NOT a part of
+https://github.com/ajalt/python-sha1/blob/master/sha1.py
+so the MIT licence above does not apply the code here below
+"""
 
 
-def _process_chunk(chunk, h0, h1, h2, h3, h4):
-    """Process a chunk of data and return the new digest variables."""
-    assert len(chunk) == 64
+# pylint:disable=too-many-locals
+def sha1_length_extension_attack(
+    authenticated_data, authenticated_data_mac, suffix_to_forge, is_valid
+):
+    """
+    Args:
+        authenticated_data (bytes)
+        authenticated_data_mac (bytes):
+            = SHA1(secret_key + authenticated_data)
+        suffix_to_forge(bytes)
+        is_valid (func):
+            is_valid(forged_data, forged_mac) should call Victim's API to check
+            if (forged_data, forged_mac) are valid
+    Returns:
+        SHA1(secret_key + authenticated_data + glue_padding + suffix_to_forge)
+    given
+    """
+    auth_mac = authenticated_data_mac
 
-    w = [0] * 80
+    secret_key_length = 0  # This needs to be guessed
+    secret_key_length = len(b"very secret key")  # TODO: remove
+    while True:
+        print(secret_key_length)
+        message_length = secret_key_length + len(authenticated_data)
+        glue_padding = calculate_glue_padding(message_length)
 
-    # Break chunk into sixteen 4-byte big-endian words w[i]
-    for i in range(16):
-        w[i] = struct.unpack(b">I", chunk[i * 4 : i * 4 + 4])[0]
-
-    # Extend the sixteen 4-byte words into eighty 4-byte words
-    for i in range(16, 80):
-        w[i] = _left_rotate(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1)
-
-    # Initialize hash value for this chunk
-    a = h0
-    b = h1
-    c = h2
-    d = h3
-    e = h4
-
-    for i in range(80):
-        if 0 <= i <= 19:
-            # Use alternative 1 for f from FIPS PB 180-1 to avoid bitwise not
-            f = d ^ (b & (c ^ d))
-            k = 0x5A827999
-        elif 20 <= i <= 39:
-            f = b ^ c ^ d
-            k = 0x6ED9EBA1
-        elif 40 <= i <= 59:
-            f = (b & c) | (b & d) | (c & d)
-            k = 0x8F1BBCDC
-        elif 60 <= i <= 79:
-            f = b ^ c ^ d
-            k = 0xCA62C1D6
-
-        a, b, c, d, e = (
-            (_left_rotate(a, 5) + f + e + k + w[i]) & 0xFFFFFFFF,
-            a,
-            _left_rotate(b, 30),
-            c,
-            d,
+        (a, b, c, d, e) = (
+            int.from_bytes(auth_mac[0:4], "big"),
+            int.from_bytes(auth_mac[4:8], "big"),
+            int.from_bytes(auth_mac[8:12], "big"),
+            int.from_bytes(auth_mac[12:16], "big"),
+            int.from_bytes(auth_mac[16:20], "big"),
         )
+        s = Sha1Hash()
+        s._h = (a, b, c, d, e)  # pylint:disable=protected-access
+        s.update(suffix_to_forge)
+        forged_mac = s.digest()
 
-    # Add this chunk's hash to result so far
-    h0 = (h0 + a) & 0xFFFFFFFF
-    h1 = (h1 + b) & 0xFFFFFFFF
-    h2 = (h2 + c) & 0xFFFFFFFF
-    h3 = (h3 + d) & 0xFFFFFFFF
-    h4 = (h4 + e) & 0xFFFFFFFF
+        forged_data = authenticated_data + glue_padding + suffix_to_forge
+        print(f"{forged_data=}")
+        print(f"{forged_mac.hex()=}")
+        if is_valid(forged_data, forged_mac):
+            return forged_data, forged_mac
 
-    return h0, h1, h2, h3, h4
+        secret_key_length += 1
+
+        raise RuntimeError("Boom!")
+
+
+def calculate_glue_padding(msg_len):
+    """
+    The code in this function is based on the MIT licenced code above
+    """
+    # TODO: revie this code for msg_len > 64
+    padding = b"\x80"
+    padding += b"\x00" * ((56 - (msg_len + 1) % 64) % 64)
+    padding += struct.pack(b">Q", msg_len * 8)
+    return padding
