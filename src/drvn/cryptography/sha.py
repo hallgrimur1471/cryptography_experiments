@@ -1,4 +1,4 @@
-# pylint: disable=pointless-string-statement, wrong-import-position,no-self-use
+# pylint: disable=pointless-string-statement,wrong-import-position,no-self-use
 """
 The code below is a modified version of this code:
 https://github.com/ajalt/python-sha1/blob/master/sha1.py
