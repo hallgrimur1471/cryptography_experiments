@@ -29,7 +29,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import logging
 import struct
 import io
 
@@ -80,7 +79,9 @@ class Sha1Hash:
 
     def digest(self):
         """Produce the final hash value (big-endian) as a bytes object"""
-        return b"".join(struct.pack(b">I", h) for h in self._produce_digest())
+        # return b"".join(struct.pack(b">I", h) for h in self._produce_digest())
+        h = self._produce_digest()
+        return self._h_to_bytes(h)
 
     def hexdigest(self):
         """Produce the final hash value (big-endian) as a hex string"""
@@ -107,9 +108,10 @@ class Sha1Hash:
         # At this point, the length of the message is either 64 or 128 bytes.
         h = self._process_chunk(message[:64], *self._h)
         if len(message) == 64:
-            print(f"{message=}")
             return h
-        return self._process_chunk(message[64:], *h)
+
+        h = self._process_chunk(message[64:], *h)
+        return h
 
     def _left_rotate(self, n, b):
         """Left rotate a 32-bit integer n by b bits."""
@@ -171,6 +173,9 @@ class Sha1Hash:
 
         return h0, h1, h2, h3, h4
 
+    def _h_to_bytes(self, h):
+        return b"".join(struct.pack(b">I", x) for x in h)
+
 
 def sha1(data):
     """SHA-1 Hashing Function
@@ -215,7 +220,6 @@ def sha1_length_extension_attack(
     secret_key_length = 0  # This needs to be guessed
     secret_key_length = len(b"very secret key")  # TODO: remove
     while True:
-        print(secret_key_length)
         message_length = secret_key_length + len(authenticated_data)
         glue_padding = calculate_glue_padding(message_length)
 
@@ -227,13 +231,17 @@ def sha1_length_extension_attack(
             int.from_bytes(auth_mac[16:20], "big"),
         )
         s = Sha1Hash()
-        s._h = (a, b, c, d, e)  # pylint:disable=protected-access
+
+        # Configure internal state of Sha1 to be the same
+        # as when it finished processing the authenticated data.
+        # pylint:disable=protected-access
+        s._h = (a, b, c, d, e)
+        s._message_byte_length = message_length + len(glue_padding)
+
         s.update(suffix_to_forge)
         forged_mac = s.digest()
 
         forged_data = authenticated_data + glue_padding + suffix_to_forge
-        print(f"{forged_data=}")
-        print(f"{forged_mac.hex()=}")
         if is_valid(forged_data, forged_mac):
             return forged_data, forged_mac
 
@@ -246,7 +254,6 @@ def calculate_glue_padding(msg_len):
     """
     The code in this function is based on the MIT licenced code above
     """
-    # TODO: revie this code for msg_len > 64
     padding = b"\x80"
     padding += b"\x00" * ((56 - (msg_len + 1) % 64) % 64)
     padding += struct.pack(b">Q", msg_len * 8)

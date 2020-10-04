@@ -3,9 +3,9 @@ Break a SHA-1 keyed MAC using length extension
 """
 
 import logging
+from copy import copy
 from dataclasses import dataclass
 
-import drvn.cryptography.utils as utils
 import drvn.cryptography.sha as sha
 
 
@@ -39,7 +39,7 @@ def run_challenge():
     forged_suffix = b";admin=true"
     forged_data = request.data + forged_suffix
 
-    forged_request = request
+    forged_request = copy(request)
     forged_request.data = forged_data
 
     if not api.is_valid_request(forged_request):
@@ -52,18 +52,16 @@ def run_challenge():
         "Calculating MAC for forged request using length extension attack ..."
     )
 
+    def is_valid(forged_data, forged_mac):
+        return api.is_valid_request(Request(forged_data, forged_mac))
+
     forged_data, forged_mac = sha.sha1_length_extension_attack(
-        request.data,
-        request.mac,
-        forged_suffix,
-        lambda forged_data, forged_mac: api.is_valid_request(
-            Request(forged_data, forged_mac)
-        ),
+        request.data, request.mac, forged_suffix, is_valid
     )
     forged_request = Request(forged_data, forged_mac)
     if api.is_valid_request(forged_request):
         logging.info(
-            f"Successfully forged a valid, authenticated request: {forged_data}"
+            f"Successfully forged a valid, authenticated request: {forged_request}"
         )
     else:
         raise RuntimeError("Failed to forge a valid, authenticated request")
