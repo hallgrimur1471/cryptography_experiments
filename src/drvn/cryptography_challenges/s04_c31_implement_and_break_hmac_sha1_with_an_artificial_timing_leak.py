@@ -9,9 +9,11 @@ svarmi_watch . .py " ( bash -c 'sleep 2; curl http://localhost:1471/test?file=fo
 import time
 import logging
 import threading
+from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from urllib.request import urlopen
+from urllib.error import HTTPError
 
 import drvn.cryptography.utils as utils
 import drvn.cryptography.hmac as hmac
@@ -24,23 +26,24 @@ def run_challenge():
     server_thread.start()
     time.sleep(1)
 
-    file_ = b"foo"
+    file_ = "README.md"
     signature = utils.generate_random_bytes(20).hex()  # guess
-    response = urlopen(
-        f"http://localhost:1471/test?file={file_}&signature={signature}"
-    )
-    print(response.read())
+    logging.info("Trying signature ")
+    try:
+        response = urlopen(
+            f"http://localhost:1471/test?file={file_}&signature={signature}"
+        )
+        print(response.read())
+    except HTTPError:
+        logging.info("Signature failed")
 
+    # time.sleep(999999999)
     logging.info("Shutting down HTTP server ...")
     http_server.shutdown()
 
 
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
-
         results = urlparse(self.path)
         query = parse_qs(results.query)
 
@@ -49,18 +52,25 @@ class RequestHandler(BaseHTTPRequestHandler):
         signature = bytes.fromhex(signature)
 
         if is_authenticated(file_, signature):
-            self.wfile.write(b"File authenticated\n")
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            file_contents = Path(file_.decode()).read_bytes()
+            self.wfile.write(file_contents)
         else:
-            self.wfile.write(b"File is not authenticated\n")
+            self.send_response(403)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(b"Not authenticated to view file\n")
 
 
 def is_authenticated(file_, signature):
     key = b"very secret key"
     hmac_ = hmac.sha1(key, file_)
-    return is_equal(signature, hmac_)
+    return insecure_compare(signature, hmac_)
 
 
-def is_equal(a, b):
+def insecure_compare(a, b):
     """
     Insecure method for checking if a equals b
 
@@ -68,6 +78,9 @@ def is_equal(a, b):
         a (bytes)
         b (bytes)
     """
+    print("comparing")
+    print(f"{a=}")
+    print(f"{b=}")
     for i in range(max(len(a), len(b))):
         if i >= len(a) or i >= len(b) or a[i] != b[i]:
             return False
