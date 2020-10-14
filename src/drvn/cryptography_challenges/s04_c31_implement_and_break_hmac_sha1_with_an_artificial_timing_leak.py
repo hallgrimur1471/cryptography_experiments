@@ -1,14 +1,11 @@
 """
 Implement and break HMAC-SHA1 with an artificial timing leak
-
-Useful command while developing:
-#pylint:disable=line-too-long
-svarmi_watch . .py " ( bash -c 'sleep 2; curl http://localhost:1471/test?file=foo\&signature=46b4ec586117154dacd49d664e5d63fdc88efb51' & ) && drvn_cryptography_run_cryptopals_challenge 31 -v"
 """
 
 import time
 import logging
 import threading
+import math
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -24,22 +21,66 @@ def run_challenge():
     server_thread = threading.Thread(target=http_server.serve_forever)
     logging.info("Starting HTTP server ...")
     server_thread.start()
-    time.sleep(1)
 
-    file_ = "README.md"
-    signature = utils.generate_random_bytes(20).hex()  # guess
-    logging.info("Trying signature ")
     try:
-        response = urlopen(
-            f"http://localhost:1471/test?file={file_}&signature={signature}"
-        )
-        print(response.read())
-    except HTTPError:
-        logging.info("Signature failed")
+        time.sleep(1)
 
-    # time.sleep(999999999)
-    logging.info("Shutting down HTTP server ...")
-    http_server.shutdown()
+        file_ = "README.md"
+        signature = utils.generate_random_bytes(20)  # guess
+        logging.info("Trying signature ")
+        try:
+            urlopen(
+                f"http://localhost:1471/test?file={file_}&signature={signature.hex()}"
+            )
+        except HTTPError:
+            logging.info("Signature failed")
+
+        logging.info("Comencing timing attack ...")
+        signature = bytearray(signature)
+        for i, _ in enumerate(signature):
+            measurements = []  # TODO: change this to dict and go 2 rounds
+            for b in range(256):
+                signature[i] = b
+                t = measure_time(file_, signature)
+                measurements.append((b, t))
+                print(f"    {b / 255 * 100:.2f}%\r", end="", flush=True)
+            measurements.sort(key=lambda m: m[1], reverse=True)
+            print()
+            for b, t in reversed(measurements):
+                b_hex = b.to_bytes(1, byteorder="little").hex()
+                print(f"{b_hex}: {t:.5f}")
+            deduced_byte = measurements[0][0]
+            signature[i] = deduced_byte
+            print("correct:        9de535f8463657127b5f734cac3e0900d408dc78")
+            progress = i / len(signature) * 100
+            print(f"deduced [{progress:3.0f}%]: {signature.hex()[0:(2*(i+1))]}")
+
+        logging.info(
+            f"Resulting signature from timing attack:\n{signature.hex()}"
+        )
+        logging.info("Opening file with signature ...")
+        results = urlopen(
+            f"http://localhost:1471/test?file={file_}&signature={signature.hex()}"
+        )
+        print(results)
+
+    finally:
+        logging.info("Shutting down HTTP server ...")
+        http_server.shutdown()
+
+
+def measure_time(file_, signature):
+    try:
+        start_time = time.time()
+        urlopen(
+            f"http://localhost:1471/test?file={file_}&signature={signature.hex()}"
+        )
+    except HTTPError:
+        logging.debug("Signature failed")
+    finally:
+        end_time = time.time()
+
+    return end_time - start_time
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -63,6 +104,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Not authenticated to view file\n")
 
+    # silence logging
+    def log_message(self, format, *args):  # pylint:disable=redefined-builtin
+        return
+
 
 def is_authenticated(file_, signature):
     key = b"very secret key"
@@ -78,9 +123,9 @@ def insecure_compare(a, b):
         a (bytes)
         b (bytes)
     """
-    print("comparing")
-    print(f"{a=}")
-    print(f"{b=}")
+    # print("comparing")
+    # print(f"{a=}")
+    # print(f"{b=}")
     for i in range(max(len(a), len(b))):
         if i >= len(a) or i >= len(b) or a[i] != b[i]:
             return False
