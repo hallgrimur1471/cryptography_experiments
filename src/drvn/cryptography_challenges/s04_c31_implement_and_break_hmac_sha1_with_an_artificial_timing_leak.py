@@ -38,30 +38,8 @@ def run_challenge():
 
         logging.info("Comencing timing attack ...")
         signature = bytearray(signature)
-        signature[0] = int("9d", 16)  # TODO: remove
-        signature[1] = int("e5", 16)  # TODO: remove
-        signature[2] = int("35", 16)  # TODO: remove
-        signature[3] = int("f8", 16)  # TODO: remove
-        signature[4] = int("46", 16)  # TODO: remove
-        signature[5] = int("36", 16)  # TODO: remove
-        signature[6] = int("57", 16)  # TODO: remove
-        signature[7] = int("12", 16)  # TODO: remove
-        signature[8] = int("7b", 16)  # TODO: remove
-        signature[9] = int("5f", 16)  # TODO: remove
-        signature[10] = int("73", 16)  # TODO: remove
-        signature[11] = int("4c", 16)  # TODO: remove
-        signature[12] = int("ac", 16)  # TODO: remove
-        signature[13] = int("3e", 16)  # TODO: remove
-        signature[14] = int("09", 16)  # TODO: remove
-        signature[15] = int("00", 16)  # TODO: remove
-        signature[16] = int("d4", 16)  # TODO: remove
-        signature[17] = int("08", 16)  # TODO: remove
-        signature[18] = int("dc", 16)  # TODO: remove
-        signature[19] = int("78", 16)  # TODO: remove
         rounds = 2  # If the attack doesn't work try increasing the rounds
         for i, _ in enumerate(signature):
-            if i <= 19:  # TODO: remove
-                continue  # TODO: remove
             measurements = dict()
             for r in range(rounds):
                 for b in range(256):
