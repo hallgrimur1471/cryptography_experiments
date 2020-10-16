@@ -5,7 +5,7 @@ Implement and break HMAC-SHA1 with an artificial timing leak
 import time
 import logging
 import threading
-import math
+import statistics
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -37,19 +37,46 @@ def run_challenge():
 
         logging.info("Comencing timing attack ...")
         signature = bytearray(signature)
+        signature[0] = int("9d", 16)  # TODO: remove
+        signature[1] = int("e5", 16)  # TODO: remove
+        signature[2] = int("35", 16)  # TODO: remove
+        signature[3] = int("f8", 16)  # TODO: remove
+        signature[4] = int("46", 16)  # TODO: remove
+        signature[5] = int("36", 16)  # TODO: remove
+        signature[6] = int("57", 16)  # TODO: remove
+        rounds = 5
         for i, _ in enumerate(signature):
-            measurements = []  # TODO: change this to dict and go 2 rounds
-            for b in range(256):
-                signature[i] = b
-                t = measure_time(file_, signature)
-                measurements.append((b, t))
-                print(f"    {b / 255 * 100:.2f}%\r", end="", flush=True)
-            measurements.sort(key=lambda m: m[1], reverse=True)
+            if i <= 6:  # TODO: remove
+                continue  # TODO: remove
+            measurements = dict()
+            for r in range(rounds):
+                for b in range(256):
+                    signature[i] = b
+                    t = measure_time(file_, signature)
+
+                    if not b in measurements:
+                        measurements[b] = []
+                    measurements[b].append(t)
+
+                    print(
+                        f"    {(r*255 + b) / (rounds*255) * 100:.2f}%\r",
+                        end="",
+                        flush=True,
+                    )
+
+            stats = list(measurements.items())
+            stats.sort(key=lambda s: min(s[1]), reverse=True)
+
             print()
-            for b, t in reversed(measurements):
+            for b, ts in reversed(stats):
+                min_ts = min(ts)
                 b_hex = b.to_bytes(1, byteorder="little").hex()
-                print(f"{b_hex}: {t:.5f}")
-            deduced_byte = measurements[0][0]
+                print(f"{b_hex}: ", end="")
+                for t in sorted(ts):
+                    print(f"{t:.5f} ", end="")
+                print(f"-> {min_ts}")
+
+            deduced_byte = stats[0][0]
             signature[i] = deduced_byte
             print("correct:        9de535f8463657127b5f734cac3e0900d408dc78")
             progress = i / len(signature) * 100
