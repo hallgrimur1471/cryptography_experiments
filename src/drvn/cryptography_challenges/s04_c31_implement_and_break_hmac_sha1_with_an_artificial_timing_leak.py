@@ -26,6 +26,7 @@ def run_challenge():
         time.sleep(1)
 
         file_ = "README.md"
+        assert "/" not in file_
         signature = utils.generate_random_bytes(20)  # guess
         logging.info("Trying signature ")
         try:
@@ -44,9 +45,22 @@ def run_challenge():
         signature[4] = int("46", 16)  # TODO: remove
         signature[5] = int("36", 16)  # TODO: remove
         signature[6] = int("57", 16)  # TODO: remove
-        rounds = 5
+        signature[7] = int("12", 16)  # TODO: remove
+        signature[8] = int("7b", 16)  # TODO: remove
+        signature[9] = int("5f", 16)  # TODO: remove
+        signature[10] = int("73", 16)  # TODO: remove
+        signature[11] = int("4c", 16)  # TODO: remove
+        signature[12] = int("ac", 16)  # TODO: remove
+        signature[13] = int("3e", 16)  # TODO: remove
+        signature[14] = int("09", 16)  # TODO: remove
+        signature[15] = int("00", 16)  # TODO: remove
+        signature[16] = int("d4", 16)  # TODO: remove
+        signature[17] = int("08", 16)  # TODO: remove
+        signature[18] = int("dc", 16)  # TODO: remove
+        signature[19] = int("78", 16)  # TODO: remove
+        rounds = 2  # If the attack doesn't work try increasing the rounds
         for i, _ in enumerate(signature):
-            if i <= 6:  # TODO: remove
+            if i <= 19:  # TODO: remove
                 continue  # TODO: remove
             measurements = dict()
             for r in range(rounds):
@@ -79,8 +93,14 @@ def run_challenge():
             deduced_byte = stats[0][0]
             signature[i] = deduced_byte
             print("correct:        9de535f8463657127b5f734cac3e0900d408dc78")
-            progress = i / len(signature) * 100
+            progress = (i + 1) / len(signature) * 100
             print(f"deduced [{progress:3.0f}%]: {signature.hex()[0:(2*(i+1))]}")
+
+            correct_hex = "9de535f8463657127b5f734cac3e0900d408dc78"
+            assert (
+                signature.hex()[0 : (2 * (i + 1))]
+                == correct_hex[0 : (2 * (i + 1))]
+            )
 
         logging.info(
             f"Resulting signature from timing attack:\n{signature.hex()}"
@@ -89,7 +109,7 @@ def run_challenge():
         results = urlopen(
             f"http://localhost:1471/test?file={file_}&signature={signature.hex()}"
         )
-        print(results)
+        print(results.read())
 
     finally:
         logging.info("Shutting down HTTP server ...")
