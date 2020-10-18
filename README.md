@@ -19,6 +19,7 @@ Here is a quick summary of what kind of exploits I have worked on in the challen
 * Mar 17, 2018: Set 1 finished (2 months)
 * Aug 15, 2020: Set 2 finished (2 years + 5 months)
 * Sep 27, 2020: Set 3 finished (1.5 months)
+* Oct 18, 2020: Set 4 finished (3 weeks)
 
 ## Usage
 
