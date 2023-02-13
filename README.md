@@ -32,12 +32,15 @@ drvn_cryptography_run_cryptopals_challenge --help
 ### Installing in editable-mode
 
 ```
-sudo -H python3.8 -m pip install --editable .
+# Installing in editable mode fails for pip version 22, so first upgrade pip
+python3 -m pip install --upgrade pip
+
+python3 -m pip install --editable .
 ```
 
 ### Installing in the usual, non-editable mode
 ```
-python3.8 -m pip install --user drvn.cryptography
+python3 -m pip install --user drvn.cryptography
 ```
 
 ## Testing
@@ -45,8 +48,8 @@ python3.8 -m pip install --user drvn.cryptography
 ### Testing prerequisites
 
 ```
-python3.8 -m pip install --user --upgrade tox
-python3.8 -m pip install --user --upgrade setuptools
+python3 -m pip install --user --upgrade tox
+python3 -m pip install --user --upgrade setuptools
 ```
 
 ### Running all tests
@@ -60,7 +63,7 @@ tox
 To get test coverage report you can try this (you need pytest and pytest-cov installed):
 
 ```
-python3.8 -m pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
+python3 -m pytest --cov=src/drvn --cov-report=html --cov-report=term --no-cov-on-fail tests
 ```
 
 ### Running unit tests
@@ -80,7 +83,7 @@ tox -e integration
 ### Uploading prerequsites
 
 ```
-python3.8 -m pip install --user -r requirements.txt
+python3 -m pip install --user -r requirements.txt
 ```
 
 ### Uploading to PyPi
