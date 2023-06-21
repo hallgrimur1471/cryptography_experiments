@@ -19,4 +19,4 @@ def run_challenge():
     logging.info(f"With key {key} ...")
     cipher = xor.encrypt(data, key)
 
-    logging.info(f"Resulting cipher: '{binascii.hexlify(cipher).decode()}'")
+    logging.info(f"Resulting ciphertext: '{binascii.hexlify(cipher).decode()}'")

@@ -22,9 +22,13 @@ class TestChallenges:
         self, workspace
     ):
         current_challenge = 1
+        challenges_to_skip_testing = {
+            #31, # timing attack challenge
+        }
         while True:
             try:
-                challenges.run(current_challenge)
+                if current_challenge not in challenges_to_skip_testing:
+                    challenges.run(current_challenge)
             except ValueError as e:
                 if re.search("Challenge [0-9]+ does not exist", str(e)):
                     break

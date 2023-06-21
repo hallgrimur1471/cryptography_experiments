@@ -8,45 +8,45 @@ from statistics import mean
 import drvn.cryptography.utils as utils
 
 
-def encrypt(data, key):
+def encrypt(plaintext, key):
     """
     Encrypt using repeating key XOR
 
     Args:
-        data (bytes[array])
+        plaintext (bytes[array])
         key (bytes[array])
     Returns:
-        cipher (bytes[array]) after applying repeating key xor encryption to
-        data. In repeating key XOR, you'll sequentially XOR each byte of the
-        key with each byte of data
+        ciphertext (bytes[array]) after applying repeating key xor encryption to
+        plaintext. In repeating key XOR, you'll sequentially XOR each byte of the
+        key with each byte of plaintext
     """
-    cipher = bytearray(data)
+    ciphertext = bytearray(plaintext)
     keysize = len(key)
-    for i, byte in enumerate(cipher):
-        cipher[i] = byte ^ key[i % keysize]
-    return cipher
+    for i, byte in enumerate(ciphertext):
+        ciphertext[i] = byte ^ key[i % keysize]
+    return ciphertext
 
 
-def decrypt(cipher):
+def decrypt(ciphertext):
     """
-    Decrypt cipher that has been encrypted using repeating key XOR
+    Decrypt ciphertext that has been encrypted using repeating key XOR
 
     Args:
-        cipher (bytes[array]): cipher to decrypt
+        ciphertext (bytes[array]): ciphertext to decrypt
     Returns:
-        list of utils.DecryptionResult, the first element is the most likely data and
+        list of utils.DecryptionResult, the first element is the most likely plaintext and
         key combination, the second element the second most likely etc...
     """
     print("determining key ...")
     # determine probable keysizes
-    keysize_candidates = range(2, min(40, floor(len(cipher) / 2)))
+    keysize_candidates = range(2, min(40, floor(len(ciphertext) / 2)))
     probable_keysizes = []  # [(keysize, hamming_distance), ...]
     for keysize in keysize_candidates:
         hamming_distances = []
         i = 0
-        while (i + keysize) + keysize <= len(cipher):
-            first = cipher[i : i + keysize]
-            second = cipher[(i + keysize) : (i + keysize) + keysize]
+        while (i + keysize) + keysize <= len(ciphertext):
+            first = ciphertext[i : i + keysize]
+            second = ciphertext[(i + keysize) : (i + keysize) + keysize]
             hamming_distances.append(utils.hamming_distance(first, second))
             i += 2 * keysize
         normalized_hamming_distance = mean(hamming_distances) / keysize
@@ -58,16 +58,16 @@ def decrypt(cipher):
     key = bytearray()
     keysize = probable_keysizes[0][0]
     for i in range(0, keysize):
-        vertical = cipher[i::keysize]
+        vertical = ciphertext[i::keysize]
         probable_char = single_byte_decryption(vertical)[0].key
         key.append(probable_char)
         print(key)
 
-    # determine data
-    cipher = bytes(cipher)
+    # determine plaintext
+    ciphertext = bytes(ciphertext)
     key = bytes(key)
-    data = encrypt(cipher, key)
-    return utils.DecryptionResult(data, key)
+    plaintext = encrypt(ciphertext, key)
+    return utils.DecryptionResult(plaintext, key)
 
 
 def single_byte_decryption(ciphertext, num_results=1):
@@ -76,7 +76,7 @@ def single_byte_decryption(ciphertext, num_results=1):
         ciphertext (bytes[array]): ciphertext to decrypt
         num_results (int): number of results to return
     Returns:
-        list of utils.DecryptionResult, the first element is the most likely data, key
+        list of utils.DecryptionResult, the first element is the most likely plaintext, key
         combination according to english frequency analysis, the second element
         the second most likely etc...
         The list contains num_results elements.
@@ -84,10 +84,10 @@ def single_byte_decryption(ciphertext, num_results=1):
     key_candidates = bytes(range(0, 256))
     results = []
     for key in key_candidates:
-        data = bytearray()
+        plaintext = bytearray()
         for byte in ciphertext:
-            data.append(byte ^ key)
-        result = utils.DecryptionResult(data, key)
+            plaintext.append(byte ^ key)
+        result = utils.DecryptionResult(plaintext, key)
         results.append(result)
     results.sort(key=lambda m: m.frequency_distance)
     results_to_return = results[: min(num_results, len(results))]
