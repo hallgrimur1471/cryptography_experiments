@@ -39,6 +39,7 @@ python3 -m pip install --editable .
 ```
 
 ### Installing in the usual, non-editable mode
+
 ```
 python3 -m pip install --user drvn.cryptography
 ```

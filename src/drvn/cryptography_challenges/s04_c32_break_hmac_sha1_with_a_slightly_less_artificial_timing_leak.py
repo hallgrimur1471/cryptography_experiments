@@ -1,5 +1,5 @@
 """
-Breka HMAC-SHA1 with a slightly less artificial timing leak
+Break HMAC-SHA1 with a slightly less artificial timing leak
 """
 
 import time

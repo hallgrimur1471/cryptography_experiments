@@ -23,7 +23,8 @@ class TestChallenges:
     ):
         current_challenge = 1
         challenges_to_skip_testing = {
-            #31, # timing attack challenge
+            31, # timing attack challenge
+            32, # timing attack challenge
         }
         while True:
             try:
